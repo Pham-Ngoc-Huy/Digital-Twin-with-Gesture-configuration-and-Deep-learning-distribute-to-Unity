@@ -153,3 +153,64 @@ id3 --> id4[training dataset]
 id4 --> id5[BPNN]
 ```
 
+### Architecture:
+
+```mermaid
+flowchart TD
+id1[MediaPipe] --> id2[21 hand landmarks]
+id2 --> id3[Virtual sensor layer]
+id3 --> id4[virtual local deformation] 
+id3 --> id5[geometric / kinematics]
+id4 --> id6[configuration estimation]
+id5 --> id6
+id6 --> id7[joint angles]
+id7 --> id8[Unity]
+id8 --> id9[Digital Twin]
+```
+
+**Validation**
+
+Validation methodology by:
+
+```math
+\boxed{
+    \text{estimated configuration}
+    \space
+    vs
+    \space
+    \text{reference configuration}
+}
+```
+
+## Ground-Truth Findings:
+**Stage 1**
+```mermaid
+flowchart TD
+id1[MediaPipe] --> id2[21 landmarks]
+id2 --> id3[virtual sensor]
+id3 --> id4[joint angles]
+```
+
+**GROUND TRUTH của joint angles là gì ?**
+
+ví dụ:
+
+```math
+
+\hat{\alpha}_{PIP} = 43.2 \degree
+
+```
+
+thì mình cần 1 reference là: $/alpha_{GT}$
+
+rồi sẽ tính `error`:
+
+```math
+e = \lvert{\hat{\alpha} - \alpha_{GT}}\rvert
+```
+và cuối cùng dervive với **MAE (Mean Absolute Error)**
+
+```math
+MAE = \frac{1}{N} \sum_{i=1}^{N}\lvert{\hat{\alpha_{i}} - \alpha_i^{GT}}\rvert
+
+```

@@ -1,0 +1,22 @@
+[project]
+name = "digital-twin-with-gesture-configuration-and-deep-learning-distribute-to-unity"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Pham-Ngoc-Huy", email = "huypham10122001@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.3",
+    "omegaconf>=2.3.1",
+    "pandas>=3.0.6",
+    "typing>=3.10.0.0",
+]
+
+[project.scripts]
+digital-twin-with-gesture-configuration-and-deep-learning-distribute-to-unity = "digital_twin_with_gesture_configuration_and_deep_learning_distribute_to_unity:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
