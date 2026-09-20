@@ -1,7 +1,8 @@
 # Day 4
+
 **Objective:**
 
->The objective is not merely to recognize a hand gesture, but to estimate the continuous finger joint configuration so that the human hand motion can be reconstructed in the digital twin environment.
+> The objective is not merely to recognize a hand gesture, but to estimate the continuous finger joint configuration so that the human hand motion can be reconstructed in the digital twin environment.
 
 **Question Raised:**
 
@@ -64,6 +65,7 @@ paper dùng:
 ## Project Utilization:
 
 **Current - Paper:**
+
 ```mermaid
 flowchart TD
 A[Strain gauges] --> B[local deflections]
@@ -90,7 +92,7 @@ id6 --> id7[ROS2 / robot]
 
 ## Deep Dive To Paper:
 
-### Q1. Neural network của paper thực sự học cái gì?**
+### Q1. Neural network của paper thực sự học cái gì?\*\*
 
 Paper sử dụng BPNN - Back Propagation Neural Network với 3 hidden layers (này gọi là Deep Learning :>)
 
@@ -107,11 +109,12 @@ $\text{Central Value: 0 at x=0}$
 (Ref: này có thể biến đổi từ hàm sigmoid = $2*signmoid(2x)$)
 
 **Input:**
->local deflections của flexible beam $\phi_1$, $\phi_2$, $\phi_3$, $\phi_4$
+
+> local deflections của flexible beam $\phi_1$, $\phi_2$, $\phi_3$, $\phi_4$
 
 **Output:**
 
->finger joint variables
+> finger joint variables
 
 Tức là configuration của ngón tay
 
@@ -122,7 +125,7 @@ theo Paper:
 ```mermaid
 flowchart TD
 id1[strain gauge] --> id2[voltage Us]
-id2 --> id3[calibration] 
+id2 --> id3[calibration]
 id3 --> id4[curvature/local deflection]
 id4 --> id5[neural network]
 id5 --> id6[joint variables]
@@ -142,8 +145,7 @@ $\rightarrow$ Sau calibration, có được `local bending curvature`
 
 Paper **không cần người thử tạo 512 gestures**
 
->với mỗi finger, 512 gestures được simulated theo kinetostatic model
-
+> với mỗi finger, 512 gestures được simulated theo kinetostatic model
 
 ```mermaid
 flowchart TD
@@ -159,7 +161,7 @@ id4 --> id5[BPNN]
 flowchart TD
 id1[MediaPipe] --> id2[21 hand landmarks]
 id2 --> id3[Virtual sensor layer]
-id3 --> id4[virtual local deformation] 
+id3 --> id4[virtual local deformation]
 id3 --> id5[geometric / kinematics]
 id4 --> id6[configuration estimation]
 id5 --> id6
@@ -183,7 +185,9 @@ Validation methodology by:
 ```
 
 ## Ground-Truth Findings:
+
 **Stage 1**
+
 ```mermaid
 flowchart TD
 id1[MediaPipe] --> id2[21 landmarks]
@@ -208,6 +212,7 @@ rồi sẽ tính `error`:
 ```math
 e = \lvert{\hat{\alpha} - \alpha_{GT}}\rvert
 ```
+
 và cuối cùng dervive với **MAE (Mean Absolute Error)**
 
 ```math

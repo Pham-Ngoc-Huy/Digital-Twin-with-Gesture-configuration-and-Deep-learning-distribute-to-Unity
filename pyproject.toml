@@ -11,6 +11,7 @@ dependencies = [
     "numpy>=2.5.3",
     "omegaconf>=2.3.1",
     "pandas>=3.0.6",
+    "pre-commit>=4.6.2",
     "typing>=3.10.0.0",
 ]
 
@@ -20,3 +21,8 @@ digital-twin-with-gesture-configuration-and-deep-learning-distribute-to-unity = 
 [build-system]
 requires = ["uv_build>=0.12.7,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.ruff]
+lint.select = ["E", "F", "I"]
+lint.ignore = ["E501", "F403", "E741"]
+lint.length = 125
