@@ -219,3 +219,38 @@ và cuối cùng dervive với **MAE (Mean Absolute Error)**
 MAE = \frac{1}{N} \sum_{i=1}^{N}\lvert{\hat{\alpha_{i}} - \alpha_i^{GT}}\rvert
 
 ```
+
+đó là **ground-true**: tức là 1 mô hình hay đúng hơn là 1 base để mình dựa vào để mình xác định là mình có đang làm đúng hay không ?
+
+Vậy để tìm kiếm **Ground-True** mình cần tìm thêm các paper có làm đến lĩnh vực này và thử reference từ đó
+
+Chỗ này mình có thể utilize lại idea của paper:
+
+> Họ dùng kinetostatic model để generate 512 simulated gestures cho mỗi finger, rồi dùng những samples đó train BPNN.
+
+**Rework Architectual**
+
+```mermaid
+flowchart TD
+    subgraph S1 [Cerveri model]
+        direction TB
+        id1_1(đọc DOF)
+        id1_2(đọc coordinate system)
+        id1_3(đọc joint model)
+        id1_1 ~~~ id1_2 ~~~ id1_3
+    end
+
+    subgraph S2 [Implement ngay]
+        direction TB
+        id2_1(define joints)
+        id2_2(define landmarks)
+        id2_3(calculate angles)
+        id2_4(forward kinematics)
+        id2_1 ~~~ id2_2 ~~~ id2_3 ~~~ id2_4
+    end
+
+    S1 --> S2
+    S2 --> id3[Visualize / test]
+    id3 --> id4[MediaPipe]
+    id4 --> id5[Unity]
+```
