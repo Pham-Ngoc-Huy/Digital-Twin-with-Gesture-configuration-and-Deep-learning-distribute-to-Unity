@@ -76,6 +76,24 @@ PIP \rightarrow DIP
 
 thì mình chỉ đang biết **hai bone đang tạo với nhau bao nhiêu góc.**
 
+```math
+\overrightarrow{PIP\rightarrow DIP} \\
+\\
+\text{hay} \\
+\\
+\overrightarrow{DIP\rightarrow PIP} 
+```
+
+>[!NOTE] 
+>
+> Công thức thông thường xử lí:
+>
+> ```math
+>  \theta = \cos^{-1}
+>  \left(\frac{\vec{v_1} \cdot \vec{v_2}}{|\vec{v_1}| |\vec{v_2}|}\right)
+>
+> ```
+
 nhưng mình không biết đó là
 
 > nó đang là `flexion` hay đang `abduct`?
@@ -110,8 +128,46 @@ Sau đó rotation trở thành:
 R(X, \theta)
 ```
 
+Where:
+
+$X$: là local rotation axis
+$\theta$: là rotation angle quanh axis đó 
+
 hoặc với joint 2-DoF:
 
 ```math
 R(X, \alpha) R(Z, \beta)
+```
+Where:
+
+$\alpha$: flexion rotation angle
+$\beta$: abduction rotation angle
+$X$: intersect axes
+$Z$: orthogonal axes
+
+Nói cách khác:
+
+```mermaid
+
+flowchart TD
+    %% Luồng cơ bản (chưa đủ)
+    A(Bone geometry) --> B(angle giữa 2 bones)
+    B --> C[❌ chưa đủ]
+    
+    %% Chuyển hướng sang Cerveri
+    C -.-> |"Giải pháp: Cerveri"| D
+    
+    %% Luồng của Cerveri
+    subgraph Cerveri [Phương pháp Cerveri]
+        direction TB
+        D[reference/local frame] -- "+" --> E[rotation axis X]
+        E -- "+" --> F[segment transformation]
+        F --> |"="| G((α = joint motion))
+    end
+    
+    %% Style để sơ đồ dễ nhìn hơn
+    style C fill:#ffe6e6,stroke:#ff6666,stroke-width:2px,color:#cc0000
+    style G fill:#e6ffe6,stroke:#66cc66,stroke-width:2px
+    style Cerveri fill:#f9f9f9,stroke:#333,stroke-dasharray: 5 5
+
 ```
