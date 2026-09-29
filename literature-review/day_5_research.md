@@ -65,3 +65,53 @@ và sau đó expand rotation matrix để tìm $\alpha$
 
 > Điều này khá thuận lợi khi áp dụng `MediaPipe` khi đó chúng ta đã có trực tiếp 3D coordinates của các landmarks. Implement bước đầu sẽ dễ hơn
 
+### Cerveri cần trong coordinate system.
+
+Nếu chỉ dùng:
+
+```math
+MCP \rightarrow PIP \\
+PIP \rightarrow DIP
+```
+
+thì mình chỉ đang biết **hai bone đang tạo với nhau bao nhiêu góc.**
+
+nhưng mình không biết đó là
+
+> nó đang là `flexion` hay đang `abduct`?
+
+$\rightarrow$ Cerveri xây dựng `local coordinate system` cho từng **anatomical district**. Paper mô tả các coordinate axes được xác định từ **marker geometry** và dùng chúng để biểu diễn motion của từng segment.
+
+_Ví dụ_:
+
+```bash
+            Y
+            |
+            |
+            |
+MCP ------- PIP
+ \
+  \ 
+   DIP
+```
+
+Ta cần định nghĩa:
+
+```bash
+local X = flexion axis
+local Z = another anatomical axis
+local Y = remaining orthogonal axis
+```
+
+Sau đó rotation trở thành:
+
+```math
+
+R(X, \theta)
+```
+
+hoặc với joint 2-DoF:
+
+```math
+R(X, \alpha) R(Z, \beta)
+```
