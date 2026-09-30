@@ -171,3 +171,134 @@ flowchart TD
     style Cerveri fill:#f9f9f9,stroke:#333,stroke-dasharray: 5 5
 
 ```
+
+### Local coordinate frame
+
+Ceveri đặt rất nhiều emphasis vào việc xác định direction của rotation axes và vị trí tương đối của các joint center trong calibration
+
+> Một cái frame 3D thực chất là cái gì ?
+
+Nó chính là 3 vectors đơn vị -- `vuông góc với nhau`:
+
+```math
+\boxed{
+    \hat{x}, \hat{y}, \hat{z}
+}
+```
+
+$\rightarrow$ áp dụng vào mediapipe landmarks
+
+MediaPipe cho
+
+```math
+
+P_{MCP}, P_{PIP}, P_{DIP}, P_{TIP}
+
+```
+
+thông thường lấy X = {1,0,0} $\rightarrow$ đây lại là global X-axis
+
+> cái mình muốn lại là local X-axis của finger
+
+**Longitudinal direction**:
+
+ta định nghĩa:
+
+```math
+
+\vec{x_{raw}} = P_{TIP} - P_{MCP}
+
+```
+rồi normalize:
+
+```math
+\boxed{
+
+    \hat{x} = \frac{P_{TIP} - P_{MCP}}{||P_{TIP} - P_{MCP}||}
+}
+
+```
+
+Lúc này, ta lấy `TIP - MCP` là đại diện cho hướng 
+
+longitudinal tổng thể của finger, thay vì chỉ lấy 1 phanlanx
+
+Ví dụ:
+
+- PIP - MCP $\rightarrow$ hướng của proximal phalanx
+- DIP - PIP $\rightarrow$ hướng của middle phalanx
+- TIP - MCP $\rightarrow$ hướng tổng thể của toàn finger
+
+Với mục tiêu dựng một finger-level local frame, TIP - MCP là một lựa chọn trực quan.
+
+
+Paper nói về việc calibrate directions of the rotation axes và relative positions of joint centers dựa trên marker configuration.
+
+Vì vậy trong project của mình, ta đang làm một Cerveri-inspired simplification:
+
+```math
+\boxed{\text{finger longitudinal direction} \approx TIP-MCP}
+```
+
+chứ chưa được gọi nó là Cerveri's anatomical rotation axis.
+
+
+**Tại sao chỉ biết $\hat{x}$ vẫn chưa đủ để xác định orientation 3D của finger ?**
+
+Ví dụ:
+
+```math
+\hat{x}= 
+\begin{bmatrix} 
+1\\
+0\\
+0 
+\end{bmatrix}
+```
+thì sau khi xoay fingẻ quanh $x$ một góc $\phi$, vẫn
+```math
+\hat{x}'= 
+\begin{bmatrix} 
+1\\
+0\\
+0 
+\end{bmatrix}
+```
+
+Đây chính là vấn đề:
+
+```math
+\boxed{\text{rotation around }x \text{ cannot be detected from }x\text{ direction alone}}
+```
+
+> và đây cũng chính là lý do ta cần axis thứ 2
+
+Ta đã có: $\hat{x}$
+
+Giờ giả sử ta có thêm một vector: $\vec{v}$
+
+chẳng hạn một hướng liên quan đến palm.
+
+Ta có thể dùng nó để xác định một mặt phẳng chứa finger và reference direction.
+
+Sau đó cross product:
+
+```math
+\hat{z} = \hat{x}\times\hat{v}
+```
+
+cho ta một hướng vuông góc với mặt phẳng đó.
+
+Rồi:
+
+```math
+\hat{y} = \hat{z}\times\hat{x}
+```
+
+$\rightarrow$ cuối cùng:
+
+```math
+\boxed{ (\hat{x},\hat{y},\hat{z}) }
+```
+
+là local coordinate frame.
