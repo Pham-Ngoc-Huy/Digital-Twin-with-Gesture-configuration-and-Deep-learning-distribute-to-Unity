@@ -1,4 +1,5 @@
 from .utils_base import Utils 
+import numpy as np
 
 class Normalize(Utils):
     def __init__(
