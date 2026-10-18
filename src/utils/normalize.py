@@ -11,9 +11,5 @@ class Normalize(Utils):
     def process(self) -> tuple:
         v = np.array(self.v, dtype=float)
         v_norm = np.linalg.norm(v)
-        return (
-            v,
-            v_norm,
-            v / v_norm
-        )
+        return v / v_norm
 
