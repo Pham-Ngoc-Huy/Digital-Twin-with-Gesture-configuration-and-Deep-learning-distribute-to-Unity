@@ -4,14 +4,24 @@ from utils import (
     Normalize,
     Projection,
 )
-from typing import List
 import numpy as np
 
 class LocalFrameBuilder(Kinematics):
+    
+    @staticmethod
+    def _rotation_matrix_test(
+        vec: list
+    ) -> bool:
+        identity_matrix = np.eyes(vec.shape[0])
+        if not np.allclose(vec.T @ vec, identity_matrix, atol=1e-9):
+            raise ValueError("Vector is not an orthogonal matrix.")
 
+        if not np.isclose(np.linalg.det(vec), 1.0, atol=1e-9):
+            raise ValueError("Vector is not a proper rotation matrix")
+    
     def process(
         self
-    ) -> List[List[float]]:
+    ) -> np.ndarray:
         """
         Build the local frame based on the base_vec and ref_vec
         where each axis is each columns in final matrix R return
@@ -27,6 +37,9 @@ class LocalFrameBuilder(Kinematics):
         z_hat = CrossProduct(x_hat, y_hat).process()
         # Create R matrix
         R = np.array([x_hat, y_hat, z_hat]).T
+
+        self._rotation_matrix_test(vec=R)
+        
         return R
 
 

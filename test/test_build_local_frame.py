@@ -5,7 +5,7 @@ import numpy as np
 class TestBuildLocalFrame(TestCases):
     def setup_method(self):
         self.base_vec =  [1,0,0]
-        self.ref_vec = [0,1,0]
+        self.ref_vec = [1,1,0]
         
         self.expected_x = [1,0,0]
         self.expected_y = [0,1,0]
@@ -34,10 +34,25 @@ class TestBuildLocalFrame(TestCases):
             f"Expected Result: {expected_R} \n"
             f"Actual Result: {self.R}"
         )
-        
+
+    def _rotation_matrix_check(self):
+        identity_matrix = np.eye(self.R.shape[0])
+        assert np.allclose(
+            self.R.T @ self.R,
+            identity_matrix,
+            atol=1e-6
+        ), "R is not an orthonormal matrix."
+
+        assert np.isclose(
+            np.linalg.det(self.R),
+            1.0,
+            atol=1e-6
+        ), "R is not a proper rotation matrix."
+    
     def run(self):
         self._shape_check()
         self._expected_run_check()
+        self._rotation_matrix_check()
         print("[PASSED] TestBuildLocalFrame")
 
     def test_run(self):
