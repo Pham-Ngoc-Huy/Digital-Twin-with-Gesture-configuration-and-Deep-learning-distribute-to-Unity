@@ -10,14 +10,24 @@ class LocalFrameBuilder(Kinematics):
     
     @staticmethod
     def _rotation_matrix_test(
-        vec: list
+        vec: np.ndarray
     ) -> bool:
-        identity_matrix = np.eyes(vec.shape[0])
+        identity_matrix = np.eye(vec.shape[0])
+        R = np.asarray(vec, dtype=float)
+
+        if R.shape != (3, 3):
+            raise ValueError("Rotation matrix must have shape (3, 3).")
+
+        if not np.all(np.isfinite(R)):
+            raise ValueError("Rotation matrix must contain finite values.")
+    
         if not np.allclose(vec.T @ vec, identity_matrix, atol=1e-9):
-            raise ValueError("Vector is not an orthogonal matrix.")
+            raise ValueError("R is not an orthogonal matrix.")
 
         if not np.isclose(np.linalg.det(vec), 1.0, atol=1e-9):
-            raise ValueError("Vector is not a proper rotation matrix")
+            raise ValueError("R is not a proper rotation matrix")
+    
+        return True
     
     def process(
         self
@@ -39,7 +49,6 @@ class LocalFrameBuilder(Kinematics):
         R = np.array([x_hat, y_hat, z_hat]).T
 
         self._rotation_matrix_test(vec=R)
-        
         return R
 
 

@@ -58,7 +58,7 @@ class Projection(Utils):
         Calculate the projection of ref_vec onto base_vec
         """
         projection = (np.dot(self.ref_vec, self.base_vec) / np.dot(self.base_vec, self.base_vec)) * self.base_vec
-        print("Projection of base_vec onto ref_vec: ", projection)
+        print("Projection of ref_vec onto base_vec: ", projection)
         return projection
 
     def _Gram_Schmidt_calculation(
