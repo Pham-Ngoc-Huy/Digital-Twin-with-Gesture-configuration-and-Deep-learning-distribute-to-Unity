@@ -64,22 +64,22 @@ class VirtualRootFrame(Kinematics):
 
     def process(self):
         wrist = self._get_points(
-            landmark_id = self.hands_cfg['wrist']['0']
+            landmark_id = self.hands_cfg['handmotion']['wrist']['wrist']['index']
         )
 
         index_mcp = self._get_points(
-            landmark_id = self.hands_cfg['index_finger']['5']
+            landmark_id = self.hands_cfg['handmotion']['index_finger']['mcp']['index']
         )
 
         middle_mcp = self._get_points(
-            landmark_id = self.hands_cfg['middle_finger']['9']
+            landmark_id = self.hands_cfg['handmotion']['middle_finger']['mcp']['index']
         )
 
         pinky_mcp = self._get_points(
-            landmark_id = self.hands_cfg['pinky']['17']
+            landmark_id = self.hands_cfg['handmotion']['pinky']['mcp']['index']
         )
 
-        # virtual origin
+        # 1. Virtual origin
         origin = np.mean([
             wrist, 
             index_mcp,
@@ -88,5 +88,49 @@ class VirtualRootFrame(Kinematics):
             ],
             axis=0
         )
+
+        # 2. Z-axis: longitudinal direction of the hand
+        z_hat = Normalize(
+            middle_mcp - wrist
+        ).process()
+
+        # 3. X-axis: across the palm, orthogonal to Z
+        x_raw = index_mcp - pinky_mcp
+
+        x_hat = Projection(
+            z_hat, x_raw
+        ).process()
+
+        # 4. Y-axis: right-handed normal direction
+        y_hat = CrossProduct(
+            z_hat, x_hat
+        ).process()
+
+        # Re-orthogonalize X to reduce numerical error
+        x_hat = CrossProduct(
+            y_hat, z_hat
+        ).process()
+
+        # Rotation matrix: axes are columns
+        R = np.column_stack((x_hat, y_hat, z_hat))
+
+        # 5. Validate the rotation matrix
+        if not np.allclose(
+            R.T @ R, np.eye(3), atol=1e-6
+        ):
+            raise ValueError("Root frame is not orthonormal.")
+
+        if not np.isclose(
+            np.linalg.det(R), 1.0, atol=1e-6
+        ):
+            raise ValueError("Root frame is not right-handed.")
+
+        return {
+            "origin": origin,
+            "rotation_matrix": R,
+            "x_axis": x_hat,
+            "y_axis": y_hat,
+            "z_axis": z_hat,
+        }
 
 

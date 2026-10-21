@@ -1,49 +1,70 @@
 handmotion:
   wrist:
-    0:
+    wrist:
+      index: 0
       description: wrist
   thumb:
-    1:
+    cmc:
+      index: 1
       description: thumb_cmc
-    2:
+    mcp:
+      index: 2
       description: thumb_mcp
-    3:
+    ip:
+      index: 3
       description: thumb_ip
-    4:
+    tip:
+      index: 4
       description: thumb_tip
   index_finger:
-    5:
+    mcp:
+      index: 5
       description: index_finger_mcp
-    6:
+    pip:
+      index: 6
       description: index_finger_pip
-    7:
+    dip:
+      index: 7
       description: index_finger_dip
-    8:
+    tip:
+      index: 8
       description: index_finger_tip
   middle_finger:
-    9:
+    mcp:
+      index: 9
       description: middle_finger_mcp  
-    10:
+    pip:
+      index: 10
       description: middle_finger_pip
-    11: 
+    dip: 
+      index: 11
       description: middle_finger_dip
-    12:
+    tip:
+      index: 12
       description: middle_finger_tip
   ring_finger:
-    13:
+    mcp:
+      index: 13
       description: ring_finger_mcp
-    14:
+    pip:
+      index: 14
       description: ring_finger_pip
-    15:
+    dip:
+      index: 15
       description: ring_finger_dip
-    16:
+    tip:
+      index: 16
       description: ring_finger_tip
   pinky:
-    17:
+    mcp:
+      index: 17
       description: pinky_mcp
-    18:
+    pip:
+      index: 18
       description: pinky_pip
-    19:
+    dip:
+      index: 19
       description: pinky_dip
-    20:
+    tip:
+      index: 20
       description: pinky_tip
