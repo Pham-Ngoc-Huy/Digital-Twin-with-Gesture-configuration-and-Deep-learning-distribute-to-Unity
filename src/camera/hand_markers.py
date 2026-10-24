@@ -29,7 +29,11 @@ class HandMarker(Stream):
         self.landmarker = self.HandLandmarker.create_from_options(options)
 
     @staticmethod
-    def print_result(result: HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+    def print_result(
+        result: HandLandmarkerResult, 
+        output_image: mp.Image, 
+        timestamp_ms: int
+    ):
         if result.hand_landmarks:
             print(f"[{timestamp_ms} ms] Detected {len(result.hand_landmarks)} hand(s): {result}")
 
@@ -42,9 +46,12 @@ class HandMarker(Stream):
 
     def turn_cam(self):
         return self.camera.turn_cam()
-
-    def process_frame(self):
-        ret, frame = self.camera.turn_cam()
+    
+    def _process_frame(
+        self, 
+        ret, 
+        frame
+    ):
         if not ret or frame is None:
             return None
 
@@ -55,10 +62,27 @@ class HandMarker(Stream):
         timestamp_ms = int(time.time() * 1000)
 
         self.landmarker.detect_async(mp_image, timestamp_ms)
-        return frame
+        return ret, frame
 
     def plot_marker(self):
-        return self.process_frame()
+        # re-work the idea from camera -- since it need to adjust again
+        window_name = "Hand Tracking with Markers"
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+
+        while True:
+            ret, frame = self.turn_cam()
+            ret, frame = self._process_frame(ret=ret, frame=frame)
+            if ret is None or frame is None:
+                print("Failed to grab frame or camera feed ended.")
+                break
+
+            cv2.imshow(window_name, frame)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q') or key == 27:
+                break
+
+        cv2.destroyWindow(window_name)
 
     def close(self):
         """Release MediaPipe resources."""
