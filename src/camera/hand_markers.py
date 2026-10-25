@@ -5,7 +5,6 @@ import mediapipe as mp
 from .base import Stream
 from camera import Camera
 from utils import CfgParse
-
 from .viz import MarkerDisplay 
 
 class HandMarker(Stream):
@@ -41,7 +40,7 @@ class HandMarker(Stream):
         self,
         result: HandLandmarkerResult,
         output_image: mp.Image,
-        timestamp_ms: int,
+        timestamp_ms: int
     ):
         self.latest_result = result
         self.latest_output_image = output_image
@@ -59,65 +58,60 @@ class HandMarker(Stream):
             result_callback=self._result_callback,
         )
 
-    def _process_frame(self, ret, frame):
-        if not ret or frame is None:
-            return None, None
+    def _process_frame_and_draw(self, bgr_frame):
+        if bgr_frame is None:
+            return None
 
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
 
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
 
         timestamp_ms = int(time.time() * 1000)
 
         self.landmarker.detect_async(mp_image, timestamp_ms)
-        return ret, frame, rgb_frame
+
+        result = self.latest_result
+
+        if result and getattr(result, "hand_landmarks", None):
+            try:
+                annotated_rgb = MarkerDisplay.draw_landmarks_on_image(
+                    image=rgb_frame, 
+                    detection_result=result
+                )
+                return cv2.cvtColor(annotated_rgb, cv2.COLOR_RGB2BGR)
+            
+            except Exception:
+                pass
+        return bgr_frame
 
     def run(self):
         window_name = "Hand Tracking with Markers"
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 
         try:
-            while True:
-                if not hasattr(self.camera, "cap") or not self.camera.cap.isOpened():
-                    print("Could not open the WebCam")
+            for ret, frame in self.camera.stream():
+                if not ret or frame is None:
                     break
 
-                ret, frame = self.camera.cap.read()
-                if not ret:
-                    print("Error: Failed to got frame.")
-                    break
-
-                corrected_frame = cv2.flip(frame, 1)
-
-                rgb_frame = cv2.cvtColor(corrected_frame, cv2.COLOR_BGR2RGB)
-                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-                timestamp_ms = int(time.time() * 1000)
-                self.landmarker.detect_async(mp_image, timestamp_ms)
-
-                annotated_frame = corrected_frame
-                if self.latest_result is not None and getattr(self.latest_result, "hand_landmarks", None):
-                    try:
-                        annotated_rgb = MarkerDisplay.draw_landmarks_on_image(rgb_frame, self.latest_result)
-                        annotated_frame = cv2.cvtColor(annotated_rgb, cv2.COLOR_RGB2BGR)
-                    except Exception:
-                        annotated_frame = corrected_frame
-                else:
-                    annotated_frame = corrected_frame
-
-                cv2.imshow(window_name, annotated_frame)
+                annotated_frame = self._process_frame_and_draw(frame)
+                cv2.imshow(
+                    winname=window_name,
+                    mat=annotated_frame
+                )
 
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("q") or key == 27:
                     break
         finally:
-            if hasattr(self.camera, "cap") and self.camera.cap.isOpened():
-                self.camera.cap.release()
             cv2.destroyWindow(window_name)
+            self.close()
 
     def close(self):
         """Release MediaPipe resources."""
         if hasattr(self, "landmarker"):
             self.landmarker.close()
+        if hasattr(self, "camera"):
+            self.camera.close()
 
     def __enter__(self):
         return self
