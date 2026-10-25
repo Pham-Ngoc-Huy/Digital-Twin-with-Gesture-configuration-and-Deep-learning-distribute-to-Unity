@@ -6,6 +6,9 @@ from .base import Stream
 from camera import Camera
 from utils import CfgParse
 
+from .viz import MarkerDisplay 
+
+NUM_HANDS = 2
 
 class HandMarker(Stream):
 
@@ -24,36 +27,42 @@ class HandMarker(Stream):
         else:
             self.model_path = cfg[model]["file_path"]
 
+        self.latest_result = None
+        self.latest_timestamp_ms = None
+        self.latest_output_image = None
+
         # Initialize the landmarker once for the live stream session
         options = self._get_options()
         self.landmarker = self.HandLandmarker.create_from_options(options)
 
-    @staticmethod
-    def print_result(
-        result: HandLandmarkerResult, 
-        output_image: mp.Image, 
-        timestamp_ms: int
+    def _result_callback(
+        self,
+        result: HandLandmarkerResult,
+        output_image: mp.Image,
+        timestamp_ms: int,
     ):
+        self.latest_result = result
+        self.latest_output_image = output_image
+        self.latest_timestamp_ms = timestamp_ms
         if result.hand_landmarks:
             print(f"[{timestamp_ms} ms] Detected {len(result.hand_landmarks)} hand(s): {result}")
 
     def _get_options(self):
         return self.HandLandmarkerOptions(
-            base_options=self.BaseOptions(model_asset_path=self.model_path),
+            base_options=self.BaseOptions(
+                model_asset_path=self.model_path,
+            ),
+            num_hands = NUM_HANDS,
             running_mode=self.VisionRunningMode.LIVE_STREAM,
-            result_callback=self.print_result,
+            result_callback=self._result_callback,
         )
 
     def turn_cam(self):
-        return self.camera.turn_cam()
-    
-    def _process_frame(
-        self, 
-        ret, 
-        frame
-    ):
+        raise NotImplementedError
+
+    def _process_frame(self, ret, frame):
         if not ret or frame is None:
-            return None
+            return None, None
 
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -62,27 +71,49 @@ class HandMarker(Stream):
         timestamp_ms = int(time.time() * 1000)
 
         self.landmarker.detect_async(mp_image, timestamp_ms)
-        return ret, frame
+        return ret, frame, rgb_frame
 
     def plot_marker(self):
-        # re-work the idea from camera -- since it need to adjust again
         window_name = "Hand Tracking with Markers"
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 
-        while True:
-            ret, frame = self.turn_cam()
-            ret, frame = self._process_frame(ret=ret, frame=frame)
-            if ret is None or frame is None:
-                print("Failed to grab frame or camera feed ended.")
-                break
+        try:
+            while True:
+                if not hasattr(self.camera, "cap") or not self.camera.cap.isOpened():
+                    print("Could not open the WebCam")
+                    break
 
-            cv2.imshow(window_name, frame)
+                ret, frame = self.camera.cap.read()
+                if not ret:
+                    print("Error: Failed to got frame.")
+                    break
 
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q') or key == 27:
-                break
+                corrected_frame = cv2.flip(frame, 1)
 
-        cv2.destroyWindow(window_name)
+                rgb_frame = cv2.cvtColor(corrected_frame, cv2.COLOR_BGR2RGB)
+                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                timestamp_ms = int(time.time() * 1000)
+                self.landmarker.detect_async(mp_image, timestamp_ms)
+
+                annotated_frame = corrected_frame
+                if self.latest_result is not None and getattr(self.latest_result, "hand_landmarks", None):
+                    try:
+                        annotated_rgb = MarkerDisplay.draw_landmarks_on_image(rgb_frame, self.latest_result)
+                        annotated_frame = cv2.cvtColor(annotated_rgb, cv2.COLOR_RGB2BGR)
+                    except Exception:
+                        annotated_frame = corrected_frame
+                else:
+                    annotated_frame = corrected_frame
+
+                cv2.imshow(window_name, annotated_frame)
+
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord("q") or key == 27:
+                    break
+        finally:
+            if hasattr(self.camera, "cap") and self.camera.cap.isOpened():
+                self.camera.cap.release()
+            cv2.destroyWindow(window_name)
 
     def close(self):
         """Release MediaPipe resources."""
