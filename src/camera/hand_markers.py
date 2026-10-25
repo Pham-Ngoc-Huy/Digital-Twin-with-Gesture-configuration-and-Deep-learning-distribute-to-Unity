@@ -8,8 +8,6 @@ from utils import CfgParse
 
 from .viz import MarkerDisplay 
 
-NUM_HANDS = 2
-
 class HandMarker(Stream):
 
     BaseOptions = mp.tasks.BaseOptions
@@ -18,7 +16,11 @@ class HandMarker(Stream):
     HandLandmarkerResult = mp.tasks.vision.HandLandmarkerResult
     VisionRunningMode = mp.tasks.vision.RunningMode
 
-    def __init__(self, model: str = "handtasks"):
+    def __init__(
+        self, 
+        model: str = "handtasks",
+        num_hands: int = None
+    ):
         super().__init__()
         self.camera = Camera()
         cfg = CfgParse(path="src/kinematics/config/cfg.yaml").process()
@@ -30,7 +32,7 @@ class HandMarker(Stream):
         self.latest_result = None
         self.latest_timestamp_ms = None
         self.latest_output_image = None
-
+        self.num_hands = num_hands
         # Initialize the landmarker once for the live stream session
         options = self._get_options()
         self.landmarker = self.HandLandmarker.create_from_options(options)
@@ -52,13 +54,10 @@ class HandMarker(Stream):
             base_options=self.BaseOptions(
                 model_asset_path=self.model_path,
             ),
-            num_hands = NUM_HANDS,
+            num_hands = self.num_hands,
             running_mode=self.VisionRunningMode.LIVE_STREAM,
             result_callback=self._result_callback,
         )
-
-    def turn_cam(self):
-        raise NotImplementedError
 
     def _process_frame(self, ret, frame):
         if not ret or frame is None:
@@ -73,7 +72,7 @@ class HandMarker(Stream):
         self.landmarker.detect_async(mp_image, timestamp_ms)
         return ret, frame, rgb_frame
 
-    def plot_marker(self):
+    def run(self):
         window_name = "Hand Tracking with Markers"
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 

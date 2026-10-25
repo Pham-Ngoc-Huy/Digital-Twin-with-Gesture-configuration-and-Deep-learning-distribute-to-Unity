@@ -5,7 +5,7 @@ class Camera(Stream):
     def __init__(self):
         self.cap = cv2.VideoCapture(0)
 
-    def turn_cam(self):
+    def run(self):
         if not self.cap.isOpened():
             print("Could not open the WebCam")
             exit()
@@ -32,6 +32,3 @@ class Camera(Stream):
         # Release the camera and close all OpenCV windows
         self.cap.release()
         cv2.destroyAllWindows()
-
-    def plot_marker(self):
-        pass
