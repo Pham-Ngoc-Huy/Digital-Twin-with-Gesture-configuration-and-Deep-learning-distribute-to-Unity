@@ -27,3 +27,6 @@ build-backend = "uv_build"
 [tool.ruff]
 lint.select = ["E", "F", "I"]
 lint.ignore = ["E501", "F403", "E741"]
+
+[tool.uv]
+package=false

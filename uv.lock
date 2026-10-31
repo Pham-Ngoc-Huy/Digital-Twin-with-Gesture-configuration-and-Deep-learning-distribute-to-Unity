@@ -229,7 +229,7 @@ wheels = [
 [[package]]
 name = "digital-twin-with-gesture-configuration-and-deep-learning-distribute-to-unity"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "mediapipe" },
     { name = "numpy" },
