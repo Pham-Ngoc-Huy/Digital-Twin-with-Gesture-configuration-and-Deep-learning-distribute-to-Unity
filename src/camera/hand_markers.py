@@ -18,11 +18,12 @@ class HandMarker(Stream):
     def __init__(
         self, 
         model: str = "handtasks",
-        num_hands: int = None
+        hands_cfg_path: str = "src/kinematics/config/cfg.yaml",
+        num_hands: int = 1
     ):
         super().__init__()
         self.camera = Camera()
-        cfg = CfgParse(path="src/kinematics/config/cfg.yaml").process()
+        cfg = CfgParse(path=hands_cfg_path).process()
         if hasattr(cfg, "assets"):
             self.model_path = cfg.assets[model]["file_path"]
         else:
@@ -86,16 +87,24 @@ class HandMarker(Stream):
                 pass
         return bgr_frame
 
+    def stream(self):
+        try:
+            for ret, frame in self.camera.stream():
+                if not ret or frame is None:
+                    break
+                
+                annotated_frame = self._process_frame_and_draw(frame)
+
+                yield annotated_frame, self.latest_result
+        finally:
+            self.close()
+
     def run(self):
         window_name = "Hand Tracking with Markers"
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 
         try:
-            for ret, frame in self.camera.stream():
-                if not ret or frame is None:
-                    break
-
-                annotated_frame = self._process_frame_and_draw(frame)
+            for annotated_frame, _ in self.stream():
                 cv2.imshow(
                     winname=window_name,
                     mat=annotated_frame
