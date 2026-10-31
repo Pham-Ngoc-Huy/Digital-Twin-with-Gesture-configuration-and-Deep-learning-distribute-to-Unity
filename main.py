@@ -1,31 +1,37 @@
-import numpy as np
+from src.camera import HandMarker
+from src.camera import Camera
+from src.kinematics import VirtualRootFrame
+class PipeLine:
+    def __init__(
+        self,
+        num_hands:int
+    ):
+        self.num_hands = num_hands
 
-x1 = np.array([1, 0, 0])
-x2 = np.array([1, 1, 0])
+        self.hand_marker = HandMarker(
+            model="handtasks",
+            num_hands=self.num_hands
+        )
+        self.world_landmarks = self.hand_marker.latest_result.hand_world_landmarks
 
+        self.virtual_frame = VirtualRootFrame(
+            world_landmarks=self.world_landmarks
+        )
 
-if len(x1) != len(x2):
-    raise ValueError("Vectors must have the same length.")
+    def _hand_marker(self):
+        return self.hand_marker.run()
 
-result = 0
+    def _virtual_root_frame(self):
+        return self.virtual_frame.process()
+        
+    def process(self):
+       self._hand_marker()
+       self._virtual_root_frame()
+       
+def main():
+    PipeLine(
+        num_hands=2
+    ).process()
 
-for i in range(0, len(x1)):
-    result +=  x1[i] * x2[i]
-    print(f"i: {i}, x1[i]: {x1[i]}, x2[i]: {x2[i]}, result: {result}")
-print(result)
-if result != 0:
-    print("Vectors are not orthogonal.")
-    print("Vi: đây là 2 vector không phải tập trực giao, vì tích vô hướng của chúng khác 0.")
-
-# projection x1 onto x2
-projection = (np.dot(x2, x1) / np.dot(x1, x1)) * x1
-print("Projection of x1 onto x2:", projection)         
-
-# y_hat = x2 - projection_x2_x1
-
-result_square = x2 - projection
-print("Result of x1 - projection:", result_square)
-
-y_hat = result_square / np.linalg.norm(result_square)
-
-print("y_hat:", y_hat)
+if __name__ == "__main__":
+    main()
