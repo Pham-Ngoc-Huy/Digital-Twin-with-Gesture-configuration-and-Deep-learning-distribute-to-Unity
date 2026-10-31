@@ -6,7 +6,7 @@ from src.utils import (
     Projection
 )
 import numpy as np
-from typing import List
+from typing import List, Optional, Dict, Any
 from mediapipe.tasks.python.components.containers.landmark import Landmark, NormalizedLandmark
 
 class VirtualRootFrame(Kinematics):
@@ -31,20 +31,34 @@ class VirtualRootFrame(Kinematics):
     """
     def __init__(
         self,
-        world_landmarks: List[List[Landmark]],
-        hands_cfg_path:str
+        hands_cfg_path:str = "src/kinematics/config/cfg.yaml"
     ):
-        self.world_landmarks = world_landmarks
         self.hands_cfg_path = hands_cfg_path
         self.hands_cfg = CfgParse(
             path=self.hands_cfg_path
         ).process()
-    
+
+        self.last_valid_state: Optional[Dict[str, Any]] = None
+
+        self.idx_wrist = self.hands_cfg['handmotion']['wrist']['wrist']['index']
+        self.idx_index_mcp = self.hands_cfg['handmotion']['index_finger']['mcp']['index']
+        self.idx_middle_mcp = self.hands_cfg['handmotion']['middle_finger']['mcp']['index']
+        self.idx_pinky_mcp = self.hands_cfg['handmotion']['pinky']['mcp']['index']
+
+        self.required_indices = [
+            self.idx_wrist,
+            self.idx_index_mcp,
+            self.idx_middle_mcp,
+            self.idx_pinky_mcp
+        ]
+
     def _get_points(
         self,
+        world_landmarks: List[Landmark],
         landmark_id:int
-    ):
-        landmark = self.world_landmarks[landmark_id]
+    ) -> np.ndarray:
+        
+        landmark = world_landmarks[landmark_id]
         if hasattr(landmark,"x"):
             point = np.array(
                 [landmark.x, landmark.y, landmark.z],
@@ -61,75 +75,104 @@ class VirtualRootFrame(Kinematics):
 
         return point
 
-    def process(self):
-        wrist = self._get_points(
-            landmark_id = self.hands_cfg['handmotion']['wrist']['wrist']['index']
-        )
+    def _is_valid_input(
+        self,
+        world_landmarks: Optional[List[Landmark]]
+    ) -> bool:
 
-        index_mcp = self._get_points(
-            landmark_id = self.hands_cfg['handmotion']['index_finger']['mcp']['index']
-        )
+        if world_landmarks is None or len(world_landmarks) == 0:
+            return False
 
-        middle_mcp = self._get_points(
-            landmark_id = self.hands_cfg['handmotion']['middle_finger']['mcp']['index']
-        )
+        max_idx = max(self.required_indices)
 
-        pinky_mcp = self._get_points(
-            landmark_id = self.hands_cfg['handmotion']['pinky']['mcp']['index']
-        )
+        if len(world_landmarks) <= max_idx:
+            return False
 
-        # 1. Virtual origin
-        origin = np.mean([
-            wrist, 
-            index_mcp,
-            middle_mcp, 
-            pinky_mcp
-            ],
-            axis=0
-        )
+        return True
+    
+    def process(
+        self,
+        world_landmarks: Optional[List[Landmark]]
+    ):
+        if not self._is_valid_input(world_landmarks=world_landmarks):
+            return self.last_valid_state
 
-        # 2. Z-axis: longitudinal direction of the hand
-        z_hat = Normalize(
-            middle_mcp - wrist
-        ).process()
+        try:
+            wrist = self._get_points(
+                world_landmarks = world_landmarks,
+                landmark_id = self.idx_wrist
+            )
 
-        # 3. X-axis: across the palm, orthogonal to Z
-        x_raw = index_mcp - pinky_mcp
+            index_mcp = self._get_points(
+                world_landmarks = world_landmarks,
+                landmark_id = self.idx_index_mcp
+            )
 
-        x_hat = Projection(
-            z_hat, x_raw
-        ).process()
+            middle_mcp = self._get_points(
+                world_landmarks = world_landmarks,
+                landmark_id = self.idx_middle_mcp
+            )
 
-        # 4. Y-axis: right-handed normal direction
-        y_hat = CrossProduct(
-            z_hat, x_hat
-        ).process()
+            pinky_mcp = self._get_points(
+                world_landmarks = world_landmarks,
+                landmark_id = self.idx_pinky_mcp
+            )
 
-        # Re-orthogonalize X to reduce numerical error
-        x_hat = CrossProduct(
-            y_hat, z_hat
-        ).process()
+            # 1. Virtual origin
+            origin = np.mean([
+                wrist, 
+                index_mcp,
+                middle_mcp, 
+                pinky_mcp
+                ],
+                axis=0
+            )
 
-        # Rotation matrix: axes are columns
-        R = np.column_stack((x_hat, y_hat, z_hat))
+            # 2. Z-axis: longitudinal direction of the hand
+            z_hat = Normalize(
+                middle_mcp - wrist
+            ).process()
 
-        # 5. Validate the rotation matrix
-        if not np.allclose(
-            R.T @ R, np.eye(3), atol=1e-6
-        ):
-            raise ValueError("Root frame is not orthonormal.")
+            # 3. X-axis: across the palm, orthogonal to Z
+            x_raw = index_mcp - pinky_mcp
 
-        if not np.isclose(
-            np.linalg.det(R), 1.0, atol=1e-6
-        ):
-            raise ValueError("Root frame is not right-handed.")
+            x_hat = Projection(
+                z_hat, x_raw
+            ).process()
 
-        return {
-            "origin": origin,
-            "rotation_matrix": R,
-            "x_axis": x_hat,
-            "y_axis": y_hat,
-            "z_axis": z_hat,
-        }
+            # 4. Y-axis: right-handed normal direction
+            y_hat = CrossProduct(
+                z_hat, x_hat
+            ).process()
 
+            # Re-orthogonalize X to reduce numerical error
+            x_hat = CrossProduct(
+                y_hat, z_hat
+            ).process()
+
+            # Rotation matrix: axes are columns
+            R = np.column_stack((x_hat, y_hat, z_hat))
+
+            # 5. Validate the rotation matrix
+            if not np.allclose(
+                R.T @ R, np.eye(3), atol=1e-6
+            ):
+                raise ValueError("Root frame is not orthonormal.")
+
+            if not np.isclose(
+                np.linalg.det(R), 1.0, atol=1e-6
+            ):
+                raise ValueError("Root frame is not right-handed.")
+
+            state = {
+                "origin": origin,
+                "rotation_matrix": R,
+                "x_axis": x_hat,
+                "y_axis": y_hat,
+                "z_axis": z_hat,
+            }
+            self.last_valid_state = state
+            return state
+        except (ValueError, IndexError, TypeError):
+            return self.last_valid_state
 

@@ -10,9 +10,10 @@ class TestVirtualRootFrame(TestCases):
         self.landmarks[9] = [0.0, 2.0, 0.0]
         self.landmarks[17] = [-1.0, 1.0, 0.0]
         self.result = VirtualRootFrame(
-            world_landmarks=self.landmarks,
             hands_cfg_path="src/kinematics/config/cfg.yaml"
-        ).process()
+        ).process(
+            world_landmarks=self.landmarks
+        )
 
     def _rotation_matrix_check(self):
         assert np.allclose(
@@ -26,6 +27,7 @@ class TestVirtualRootFrame(TestCases):
             1.0,
             atol=1e-6
         ), "Result is not a proper rotation matrix."
+        
     def run(self):
         self._rotation_matrix_check()
         print("[PASSED] TestVirtualRootFrame")
