@@ -1,5 +1,5 @@
 from .base import Kinematics
-from utils import (
+from src.utils import (
     CfgParse,
     Normalize,
     CrossProduct,

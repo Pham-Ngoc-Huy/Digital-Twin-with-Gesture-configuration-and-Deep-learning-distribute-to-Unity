@@ -12,7 +12,10 @@ class PipeLine:
             model="handtasks",
             num_hands=self.num_hands
         )
-        self.world_landmarks = self.hand_marker.latest_result.hand_world_landmarks
+        if self.hand_marker.latest_result.get("hand_world_landmarks", None) is None:
+            self.world_landmarks =
+        else:
+            self.world_landmarks = self.hand_marker.latest_result.hand_world_landmarks
 
         self.virtual_frame = VirtualRootFrame(
             world_landmarks=self.world_landmarks
