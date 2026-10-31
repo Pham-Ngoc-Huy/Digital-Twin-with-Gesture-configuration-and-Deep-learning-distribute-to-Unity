@@ -3,8 +3,8 @@ import cv2
 import mediapipe as mp
 
 from .base import Stream
-from camera import Camera
-from utils import CfgParse
+from src.camera import Camera
+from src.utils import CfgParse
 from .viz import MarkerDisplay 
 
 class HandMarker(Stream):

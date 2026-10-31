@@ -13,6 +13,7 @@ class TestHandMarkers(TestCases):
                 HandMarker.HandLandmarker,
                 "create_from_options",
             ),
+            "mp_image": patch("src.camera.hand_markers.mp.Image"),
             "display": patch("src.camera.hand_markers.MarkerDisplay"),
             "imshow": patch("src.camera.hand_markers.cv2.imshow"),
             "wait_key": patch("src.camera.hand_markers.cv2.waitKey", return_value=ord('q')),
