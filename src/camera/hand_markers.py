@@ -32,7 +32,7 @@ class HandMarker(Stream):
         self.latest_timestamp_ms = None
         self.latest_output_image = None
         self.num_hands = num_hands
-        # Initialize the landmarker once for the live stream session
+
         options = self._get_options()
         self.landmarker = self.HandLandmarker.create_from_options(options)
 
@@ -45,8 +45,10 @@ class HandMarker(Stream):
         self.latest_result = result
         self.latest_output_image = output_image
         self.latest_timestamp_ms = timestamp_ms
-        if result.hand_landmarks:
-            print(f"[{timestamp_ms} ms] Detected {len(result.hand_landmarks)} hand(s): {result}")
+
+        # BUG: this is for debugging purposes, else dont need to print
+        # if result.hand_landmarks:
+            # print(f"[{timestamp_ms} ms] Detected {len(result.hand_landmarks)} hand(s): {result}")
 
     def _get_options(self):
         return self.HandLandmarkerOptions(
@@ -107,7 +109,6 @@ class HandMarker(Stream):
             self.close()
 
     def close(self):
-        """Release MediaPipe resources."""
         if hasattr(self, "landmarker"):
             self.landmarker.close()
         if hasattr(self, "camera"):
