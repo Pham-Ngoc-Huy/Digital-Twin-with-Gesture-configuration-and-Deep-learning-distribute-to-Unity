@@ -37,3 +37,7 @@ pythonpath = [
   "src"
 ]
 testpaths = ["test"]
+
+filterwarnings = [
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+]

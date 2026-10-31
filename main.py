@@ -13,7 +13,7 @@ class PipeLine:
             num_hands=self.num_hands
         )
         if self.hand_marker.latest_result.get("hand_world_landmarks", None) is None:
-            self.world_landmarks =
+            self.world_landmarks = None
         else:
             self.world_landmarks = self.hand_marker.latest_result.hand_world_landmarks
 
