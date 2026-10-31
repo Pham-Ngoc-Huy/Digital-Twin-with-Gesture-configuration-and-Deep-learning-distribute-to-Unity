@@ -7,7 +7,6 @@ from utils import (
 )
 import numpy as np
 from typing import List
-from mediapipe.tasks.python.components.containers.category import Category
 from mediapipe.tasks.python.components.containers.landmark import Landmark, NormalizedLandmark
 
 class VirtualRootFrame(Kinematics):

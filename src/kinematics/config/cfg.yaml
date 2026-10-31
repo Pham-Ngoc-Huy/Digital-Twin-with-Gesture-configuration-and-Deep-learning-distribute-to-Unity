@@ -1,3 +1,6 @@
+assets:
+  handtasks:
+    file_path: "src/assets/hand_landmarker.task"
 handmotion:
   wrist:
     wrist:
