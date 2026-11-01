@@ -1,6 +1,6 @@
 ## Project details:
 
-> [!INFO]
+> [!NOTE]
 >
 > **Project name:** Real-time Hand-Gesture Tracking and Control
 >
