@@ -1,11 +1,10 @@
-from .base import Stream
 import cv2
 
+from .base import Stream
+
+
 class Camera(Stream):
-    def __init__(
-        self,
-        device_id:int = 0
-    ):
+    def __init__(self, device_id: int = 0):
         super().__init__()
         self.device_id = device_id
         self.cap = cv2.VideoCapture(self.device_id)
@@ -18,18 +17,15 @@ class Camera(Stream):
         if not ret or frame is None:
             return False, None
 
-        corrected_frame = cv2.flip(
-            src=frame,
-            flipCode=1
-        )
+        corrected_frame = cv2.flip(src=frame, flipCode=1)
         return True, corrected_frame
-    
+
     def stream(self):
         if not self.cap.isOpened():
             print("Could not open the WebCam")
             return
-        
-        try: 
+
+        try:
             while self.cap.isOpened():
                 ret, frame = self._get_frame()
                 if not ret:
@@ -41,10 +37,7 @@ class Camera(Stream):
 
     def run(self):
         window_name = "Camera Feed Test"
-        cv2.namedWindow(
-            winname=window_name,
-            flags=cv2.WINDOW_NORMAL
-        )
+        cv2.namedWindow(winname=window_name, flags=cv2.WINDOW_NORMAL)
         try:
             for ret, frame in self.stream():
                 if not ret or frame is None:
@@ -56,9 +49,7 @@ class Camera(Stream):
                 if key == ord("q") or key == 27:
                     break
         finally:
-            cv2.destroyWindow(
-                winname=window_name
-            )
+            cv2.destroyWindow(winname=window_name)
 
     def close(self):
         if hasattr(self, "cap") and self.cap.isOpened():

@@ -1,6 +1,6 @@
+import cv2
 import mediapipe as mp
 import numpy as np
-import cv2
 
 MARGIN = 10
 FONT_SIZE = 1
@@ -9,7 +9,6 @@ HANDEDNESS_TEXT_COLOR = (88, 205, 54)  # vibrant green
 
 
 class MarkerDisplay:
-
     @staticmethod
     def draw_landmarks_on_image(image, detection_result):
         mp_hands_connections = mp.tasks.vision.HandLandmarksConnections
@@ -59,7 +58,11 @@ class MarkerDisplay:
                             h0 = handedness[0]
                             if hasattr(h0, "category_name"):
                                 category_name = h0.category_name
-                            elif isinstance(h0, list) and h0 and hasattr(h0[0], "category_name"):
+                            elif (
+                                isinstance(h0, list)
+                                and h0
+                                and hasattr(h0[0], "category_name")
+                            ):
                                 category_name = h0[0].category_name
                         except Exception:
                             pass

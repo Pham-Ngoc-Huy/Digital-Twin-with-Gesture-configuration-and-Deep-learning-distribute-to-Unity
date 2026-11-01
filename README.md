@@ -5,20 +5,22 @@
 > **Project name:** Real-time Hand-Gesture Tracking and Control
 >
 > **Techique:** Digital-twin
-> 
+>
 > **Author:** Jedi (Pham Ngoc Huy)
 >
 > **Major**: Electrical Computer Engineer
 
-_**Tech-stacks**_: 
- - MediaPipe, CV2
- - Deep Learning (MLP - with `n` hidden layers)
- - Python
- - Unity (3D Sketch Model)
- - Matlab/C++ (Controlling Theory and Signal Monitoring)
- - ROS2 (Model deployment)
+_**Tech-stacks**_:
+
+- MediaPipe, CV2
+- Deep Learning (MLP - with `n` hidden layers)
+- Python
+- Unity (3D Sketch Model)
+- Matlab/C++ (Controlling Theory and Signal Monitoring)
+- ROS2 (Model deployment)
 
 ## Workflow-expectation:
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -40,6 +42,4 @@ sequenceDiagram
     Unity-->>MAT: (Optional) Send Trajectory Lag & Position Error
 ```
 
-TBC
---
-
+## TBC

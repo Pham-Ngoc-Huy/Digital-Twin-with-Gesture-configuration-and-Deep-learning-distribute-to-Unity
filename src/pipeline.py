@@ -1,6 +1,8 @@
 import cv2
+
 from src.camera import HandMarker
 from src.kinematics import VirtualRootFrame
+
 
 class PipeLine:
     def __init__(self, num_hands: int, hands_cfg_path: str):
@@ -14,8 +16,7 @@ class PipeLine:
             hands_cfg_path=hands_cfg_path,
         )
         self.root_frames = [
-            VirtualRootFrame(hands_cfg_path=hands_cfg_path)
-            for _ in range(num_hands)
+            VirtualRootFrame(hands_cfg_path=hands_cfg_path) for _ in range(num_hands)
         ]
 
     def _extract_world_landmarks(self, result):
@@ -45,9 +46,9 @@ class PipeLine:
                     continue
 
                 if self._is_new_result():
-                    print("="*80)
+                    print("=" * 80)
                     states = self.process_frame(result)
-                    print("-"*80)
+                    print("-" * 80)
                     self._log(result, states)
 
                 cv2.imshow(self.window_name, frame)

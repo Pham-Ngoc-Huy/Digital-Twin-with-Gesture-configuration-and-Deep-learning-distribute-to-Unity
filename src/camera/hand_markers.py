@@ -1,14 +1,16 @@
 import time
+
 import cv2
 import mediapipe as mp
 
-from .base import Stream
 from src.camera import Camera
 from src.utils import CfgParse
-from .viz import MarkerDisplay 
+
+from .base import Stream
+from .viz import MarkerDisplay
+
 
 class HandMarker(Stream):
-
     BaseOptions = mp.tasks.BaseOptions
     HandLandmarker = mp.tasks.vision.HandLandmarker
     HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
@@ -16,10 +18,10 @@ class HandMarker(Stream):
     VisionRunningMode = mp.tasks.vision.RunningMode
 
     def __init__(
-        self, 
+        self,
         model: str = "handtasks",
         hands_cfg_path: str = "src/kinematics/config/cfg.yaml",
-        num_hands: int = 1
+        num_hands: int = 1,
     ):
         super().__init__()
         self.camera = Camera()
@@ -38,10 +40,7 @@ class HandMarker(Stream):
         self.landmarker = self.HandLandmarker.create_from_options(options)
 
     def _result_callback(
-        self,
-        result: HandLandmarkerResult,
-        output_image: mp.Image,
-        timestamp_ms: int
+        self, result: HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int
     ):
         self.latest_result = result
         self.latest_output_image = output_image
@@ -49,14 +48,14 @@ class HandMarker(Stream):
 
         # BUG: this is for debugging purposes, else dont need to print
         # if result.hand_landmarks:
-            # print(f"[{timestamp_ms} ms] Detected {len(result.hand_landmarks)} hand(s): {result}")
+        # print(f"[{timestamp_ms} ms] Detected {len(result.hand_landmarks)} hand(s): {result}")
 
     def _get_options(self):
         return self.HandLandmarkerOptions(
             base_options=self.BaseOptions(
                 model_asset_path=self.model_path,
             ),
-            num_hands = self.num_hands,
+            num_hands=self.num_hands,
             running_mode=self.VisionRunningMode.LIVE_STREAM,
             result_callback=self._result_callback,
         )
@@ -78,11 +77,10 @@ class HandMarker(Stream):
         if result and getattr(result, "hand_landmarks", None):
             try:
                 annotated_rgb = MarkerDisplay.draw_landmarks_on_image(
-                    image=rgb_frame, 
-                    detection_result=result
+                    image=rgb_frame, detection_result=result
                 )
                 return cv2.cvtColor(annotated_rgb, cv2.COLOR_RGB2BGR)
-            
+
             except Exception:
                 pass
         return bgr_frame
@@ -92,7 +90,7 @@ class HandMarker(Stream):
             for ret, frame in self.camera.stream():
                 if not ret or frame is None:
                     break
-                
+
                 annotated_frame = self._process_frame_and_draw(frame)
 
                 yield annotated_frame, self.latest_result
@@ -105,10 +103,7 @@ class HandMarker(Stream):
 
         try:
             for annotated_frame, _ in self.stream():
-                cv2.imshow(
-                    winname=window_name,
-                    mat=annotated_frame
-                )
+                cv2.imshow(winname=window_name, mat=annotated_frame)
 
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("q") or key == 27:

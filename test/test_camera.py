@@ -1,12 +1,14 @@
 from unittest.mock import MagicMock, patch
+
 import numpy as np
+
 from src.camera import Camera
 from src.camera import camera as camera_module
+
 from .base import TestCases
 
 
 class TestCamera(TestCases):
-    
     def setup_method(self):
         self.device_id = 0
         self.fake_frame = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -106,9 +108,7 @@ class TestCamera(TestCases):
         mock_videocapture,
         mock_flip,
     ):
-        mock_cap = self._make_camera_capture(
-            [(True, self.fake_frame), (False, None)]
-        )
+        mock_cap = self._make_camera_capture([(True, self.fake_frame), (False, None)])
         mock_videocapture.return_value = mock_cap
         mock_flip.return_value = self.flipped_frame
 
@@ -179,9 +179,7 @@ class TestCamera(TestCases):
         mock_waitkey,
         mock_destroywindow,
     ):
-        mock_cap = self._make_camera_capture(
-            [(True, self.fake_frame), (False, None)]
-        )
+        mock_cap = self._make_camera_capture([(True, self.fake_frame), (False, None)])
         mock_videocapture.return_value = mock_cap
         mock_flip.return_value = self.flipped_frame
         mock_waitkey.return_value = ord("q")
@@ -198,9 +196,7 @@ class TestCamera(TestCases):
             self.flipped_frame,
         )
         mock_waitkey.assert_called_once_with(1)
-        mock_destroywindow.assert_called_once_with(
-            winname="Camera Feed Test"
-        )
+        mock_destroywindow.assert_called_once_with(winname="Camera Feed Test")
         mock_cap.release.assert_called_once_with()
 
     def test_run(self):
