@@ -1,11 +1,10 @@
-from .utils_base import Utils 
 import numpy as np
 
+from .utils_base import Utils
+
+
 class Normalize(Utils):
-    def __init__(
-        self,
-        v: list
-    ):
+    def __init__(self, v: list):
         self.v = v
 
     def process(self) -> tuple:
@@ -19,7 +18,6 @@ class Normalize(Utils):
 
         v_norm = np.linalg.norm(v)
 
-        if np.isclose(v_norm, 0,0, atol=1e-9):
+        if np.isclose(v_norm, 0, 0, atol=1e-9):
             raise ValueError("Cannot normalize a zero vector.")
         return v / v_norm
-

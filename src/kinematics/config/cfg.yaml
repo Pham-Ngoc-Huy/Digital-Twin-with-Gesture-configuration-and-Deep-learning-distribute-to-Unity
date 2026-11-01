@@ -35,11 +35,11 @@ handmotion:
   middle_finger:
     mcp:
       index: 9
-      description: middle_finger_mcp  
+      description: middle_finger_mcp
     pip:
       index: 10
       description: middle_finger_pip
-    dip: 
+    dip:
       index: 11
       description: middle_finger_dip
     tip:

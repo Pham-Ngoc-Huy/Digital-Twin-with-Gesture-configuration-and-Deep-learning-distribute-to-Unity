@@ -5,6 +5,7 @@
 Ứng dụng Cerveri model để phát triển Virtual Sensor và thực hiện programming
 
 Trả lời được câu hỏi
+
 > Từ mediapipe 21 landmarks $\rightarrow$ làm thế nào để lấy được joint angles $\rightarrow$ đưa ra joint angles vào một kinematic hand model
 
 ## Processing:
@@ -16,6 +17,7 @@ từ paper của Cerveri, có kết luận rằng:
 hand = hierarchical rigid-body system
 
 Mỗi anatomical distinct có:
+
 - vị trí
 - orientation
 - hirerachy
@@ -45,22 +47,24 @@ Ví dụ index finger
 
 ```mermaid
 flowchart LR
-id1[MCP] --> id2[PIP] 
-id2 --> id3[DIP] 
+id1[MCP] --> id2[PIP]
+id2 --> id3[DIP]
 id3 --> id4[TIP]
 ```
 
-ta đang muốn tìm 
+ta đang muốn tìm
 
 ```math
 \theta_{PIP}
 ```
+
 Cerveri biểu diễn 1-DoF rotation bằng rotation matrix quanh một local axis. Paper đang viết marker relation dưới dạng:
 
 ```math
 P_{p} = R_{1DoF}(X,\alpha) P_{t}
 
 ```
+
 và sau đó expand rotation matrix để tìm $\alpha$
 
 > Điều này khá thuận lợi khi áp dụng `MediaPipe` khi đó chúng ta đã có trực tiếp 3D coordinates của các landmarks. Implement bước đầu sẽ dễ hơn
@@ -81,10 +85,10 @@ thì mình chỉ đang biết **hai bone đang tạo với nhau bao nhiêu góc.
 \\
 \text{hay} \\
 \\
-\overrightarrow{DIP\rightarrow PIP} 
+\overrightarrow{DIP\rightarrow PIP}
 ```
 
->[!NOTE] 
+> [!NOTE]
 >
 > Công thức thông thường xử lí:
 >
@@ -109,7 +113,7 @@ _Ví dụ_:
             |
 MCP ------- PIP
  \
-  \ 
+  \
    DIP
 ```
 
@@ -131,13 +135,14 @@ R(X, \theta)
 Where:
 
 $X$: là local rotation axis
-$\theta$: là rotation angle quanh axis đó 
+$\theta$: là rotation angle quanh axis đó
 
 hoặc với joint 2-DoF:
 
 ```math
 R(X, \alpha) R(Z, \beta)
 ```
+
 Where:
 
 $\alpha$: flexion rotation angle
@@ -153,10 +158,10 @@ flowchart TD
     %% Luồng cơ bản (chưa đủ)
     A(Bone geometry) --> B(angle giữa 2 bones)
     B --> C[❌ chưa đủ]
-    
+
     %% Chuyển hướng sang Cerveri
     C -.-> |"Giải pháp: Cerveri"| D
-    
+
     %% Luồng của Cerveri
     subgraph Cerveri [Phương pháp Cerveri]
         direction TB
@@ -164,7 +169,7 @@ flowchart TD
         E -- "+" --> F[segment transformation]
         F --> |"="| G((α = joint motion))
     end
-    
+
     %% Style để sơ đồ dễ nhìn hơn
     style C fill:#ffe6e6,stroke:#ff6666,stroke-width:2px,color:#cc0000
     style G fill:#e6ffe6,stroke:#66cc66,stroke-width:2px
@@ -209,6 +214,7 @@ ta định nghĩa:
 \vec{x_{raw}} = P_{TIP} - P_{MCP}
 
 ```
+
 rồi normalize:
 
 ```math
@@ -219,7 +225,7 @@ rồi normalize:
 
 ```
 
-Lúc này, ta lấy `TIP - MCP` là đại diện cho hướng 
+Lúc này, ta lấy `TIP - MCP` là đại diện cho hướng
 
 longitudinal tổng thể của finger, thay vì chỉ lấy 1 phanlanx
 
@@ -231,7 +237,6 @@ Ví dụ:
 
 Với mục tiêu dựng một finger-level local frame, TIP - MCP là một lựa chọn trực quan.
 
-
 Paper nói về việc calibrate directions of the rotation axes và relative positions of joint centers dựa trên marker configuration.
 
 Vì vậy trong project của mình, ta đang làm một Cerveri-inspired simplification:
@@ -242,26 +247,27 @@ Vì vậy trong project của mình, ta đang làm một Cerveri-inspired simpli
 
 chứ chưa được gọi nó là Cerveri's anatomical rotation axis.
 
-
 **Tại sao chỉ biết $\hat{x}$ vẫn chưa đủ để xác định orientation 3D của finger ?**
 
 Ví dụ:
 
 ```math
-\hat{x}= 
-\begin{bmatrix} 
+\hat{x}=
+\begin{bmatrix}
 1\\
 0\\
-0 
+0
 \end{bmatrix}
 ```
+
 thì sau khi xoay fingẻ quanh $x$ một góc $\phi$, vẫn
+
 ```math
-\hat{x}'= 
-\begin{bmatrix} 
+\hat{x}'=
+\begin{bmatrix}
 1\\
 0\\
-0 
+0
 \end{bmatrix}
 ```
 

@@ -1,7 +1,10 @@
-from .base import TestCases
-import numpy as np
 from unittest.mock import MagicMock, patch
+
+import numpy as np
+
 from src.camera import HandMarker
+
+from .base import TestCases
 
 
 class TestHandMarkers(TestCases):
@@ -16,7 +19,9 @@ class TestHandMarkers(TestCases):
             "mp_image": patch("src.camera.hand_markers.mp.Image"),
             "display": patch("src.camera.hand_markers.MarkerDisplay"),
             "imshow": patch("src.camera.hand_markers.cv2.imshow"),
-            "wait_key": patch("src.camera.hand_markers.cv2.waitKey", return_value=ord('q')),
+            "wait_key": patch(
+                "src.camera.hand_markers.cv2.waitKey", return_value=ord("q")
+            ),
             "destroy_window": patch("src.camera.hand_markers.cv2.destroyWindow"),
         }
         self.mocks = {}
@@ -36,10 +41,7 @@ class TestHandMarkers(TestCases):
         patch.stopall()
 
     def test_init_and_options(self):
-        marker = HandMarker(
-            model=self.model,
-            num_hands=self.fake_num_hands
-        )
+        marker = HandMarker(model=self.model, num_hands=self.fake_num_hands)
         assert marker.num_hands == self.fake_num_hands
         assert marker.model_path == "fake/path/model.task"
         self.mocks["landmark_create"].assert_called_once()
@@ -51,9 +53,7 @@ class TestHandMarkers(TestCases):
         timestamp = 1000
 
         marker._result_callback(
-            result=mock_result,
-            output_image=mock_img,
-            timestamp_ms=timestamp
+            result=mock_result, output_image=mock_img, timestamp_ms=timestamp
         )
 
         assert marker.latest_result == mock_result
@@ -87,7 +87,9 @@ class TestHandMarkers(TestCases):
         mock_result.hand_landmarks = [[MagicMock()]]
         marker.latest_result = mock_result
 
-        self.mocks["display"].draw_landmarks_on_image.side_effect = Exception("Drawing Error")
+        self.mocks["display"].draw_landmarks_on_image.side_effect = Exception(
+            "Drawing Error"
+        )
 
         output_frame = marker._process_frame_and_draw(bgr_frame=self.fake_frame)
         np.testing.assert_array_equal(output_frame, self.fake_frame)
