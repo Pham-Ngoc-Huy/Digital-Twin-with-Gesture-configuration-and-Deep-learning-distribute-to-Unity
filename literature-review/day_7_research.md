@@ -6,7 +6,7 @@
 
 - Mục tiêu: xây dựng Digital Twin bàn tay, sử dụng MediaPipe hand landmarks như virtual sensors thay cho glove sensors vật lý.
 - Pipeline hướng tới: MediaPipe/Python → xử lý landmarks và kinematics → ROS2 → Unity.
-- Paper tham chiếu chính cho mô hình giải phẫu và ước lượng chuyển động: *Finger Kinematic Modeling and Real-Time Hand Motion Estimation* của Cerveri et al.
+- Paper tham chiếu chính cho mô hình giải phẫu và ước lượng chuyển động: _Finger Kinematic Modeling and Real-Time Hand Motion Estimation_ của Cerveri et al.
 - Cần phân biệt mô hình của Cerveri với paper glove sensing: Cerveri mô tả MCP 2DOF, PIP/DIP 1DOF; không nên giản lược toàn bộ thành việc chỉ dựng rotation matrices.
 
 ## 2. Trao đổi về các quan hệ hình học và chức năng trong Cerveri
@@ -22,6 +22,7 @@
 5. Real-time motion estimation.
 
 Cần phân biệt:
+
 - **Geometrical relations:** quan hệ hình học giữa marker/segment, ví dụ khoảng cách và vị trí tương đối.
 - **Functional relations:** các ràng buộc chuyển động, DOF, giới hạn góc và coupling giữa các khớp.
 
@@ -34,14 +35,16 @@ Cần phân biệt:
 **Trợ lý:** Có thể dùng functional relation được Cerveri sử dụng:
 
 \[
-\theta_{DIP} = \frac{2}{3}\theta_{PIP}
+\theta*{DIP} = \frac{2}{3}\theta*{PIP}
 \]
 
 Ví dụ:
+
 - PIP = 90° → DIP = 60°.
 - PIP = 60° → DIP = 40°.
 
 Tuy nhiên, cần phân biệt hai bước:
+
 1. Ước lượng góc DIP từ góc PIP.
 2. Dùng forward kinematics cùng segment geometry và orientation để khôi phục vị trí DIP.
 
@@ -52,6 +55,7 @@ Functional relation cung cấp góc, không tự cung cấp tọa độ 3D.
 **Trợ lý:** Có thể phát triển song song. Functional relation DIP–PIP có thể implement riêng; nhưng để khôi phục vị trí 3D cần segment lengths, local frames và joint axes từ calibration.
 
 Các thông tin calibration được nêu gồm:
+
 - Root coordinate frame.
 - Local coordinate frames.
 - Joint centers.
@@ -66,6 +70,7 @@ Các thông tin calibration được nêu gồm:
 **Trợ lý:** Đúng, khoảng cách PIP–DIP là ước lượng chiều dài middle phalanx, không phải chiều dài xương giải phẫu thực tế.
 
 Với MediaPipe index finger:
+
 - Landmark 5: Index MCP.
 - Landmark 6: Index PIP.
 - Landmark 7: Index DIP.
@@ -74,21 +79,21 @@ Với MediaPipe index finger:
 Chuyển landmarks từ World Frame sang Root Frame:
 
 \[
-P_{root}=(P_{world}-O_{root})R_{root}
+P*{root}=(P*{world}-O*{root})R*{root}
 \]
 
 Sau đó:
 
 \[
-L_{middle} = \|P_{DIP}^{root}-P_{PIP}^{root}\|_2
+L*{middle} = \|P*{DIP}^{root}-P\_{PIP}^{root}\|\_2
 \]
 
 Một phép rigid transformation chỉ quay và tịnh tiến hệ tọa độ nên khoảng cách Euclidean không đổi:
 
 \[
-\|P_{DIP}^{world}-P_{PIP}^{world}\|
+\|P*{DIP}^{world}-P*{PIP}^{world}\|
 =
-\|P_{DIP}^{root}-P_{PIP}^{root}\|
+\|P*{DIP}^{root}-P*{PIP}^{root}\|
 \]
 
 Root Frame không làm khoảng cách chính xác hơn; nó tạo hệ quy chiếu chung để biểu diễn segments, local frames và kinematic chain.
@@ -96,10 +101,10 @@ Root Frame không làm khoảng cách chính xác hơn; nó tạo hệ quy chi�
 Đề xuất implementation: thu thập nhiều frame calibration tĩnh và dùng median để giảm ảnh hưởng outlier:
 
 \[
-L_{middle} =
+L*{middle} =
 \operatorname{median}
 \left(
-L_{middle}^{(1)},\ldots,L_{middle}^{(N)}
+L*{middle}^{(1)},\ldots,L\_{middle}^{(N)}
 \right)
 \]
 
@@ -114,33 +119,34 @@ L_{middle}^{(1)},\ldots,L_{middle}^{(N)}
 Ví dụ minh họa:
 
 \[
-P_{DIP}=P_{PIP}+R_{middle}
+P*{DIP}=P*{PIP}+R*{middle}
 \begin{bmatrix}
-0\\L_{middle}\\0
+0\\L*{middle}\\0
 \end{bmatrix}
 \]
 
-Trong đó \(R_{middle}\) là orientation của middle phalanx theo quy ước local frame.
+Trong đó \(R\_{middle}\) là orientation của middle phalanx theo quy ước local frame.
 
 **Người dùng:** Ý là mình thực sự xây dựng chưa á.
 
 **Trợ lý:** Chưa. Tới thời điểm đó, dự án mới có nền tảng và một số phần lý thuyết, chưa có hệ thống Virtual Sensing hoàn chỉnh theo hướng Cerveri.
 
-| Thành phần | Trạng thái tại thời điểm trao đổi |
-|---|---|
-| MediaPipe 21 landmarks | Đã có pipeline streaming |
-| Root Coordinate Frame | Đã có implementation |
-| World → Root transformation | Đã có công thức và hướng triển khai |
-| Finger Local Coordinate Frames | Chưa hoàn thành |
-| Anatomical Calibration | Chưa hoàn thành |
-| Segment length estimation | Mới xác định phương pháp |
-| Joint centers / rotation axes | Chưa hoàn thành |
-| Geometrical relations | Chưa implement |
-| Functional relations | Mới phân tích DIP–PIP |
-| Forward Kinematics | Chưa implement |
-| Occlusion reconstruction | Chưa implement |
+| Thành phần                     | Trạng thái tại thời điểm trao đổi   |
+| ------------------------------ | ----------------------------------- |
+| MediaPipe 21 landmarks         | Đã có pipeline streaming            |
+| Root Coordinate Frame          | Đã có implementation                |
+| World → Root transformation    | Đã có công thức và hướng triển khai |
+| Finger Local Coordinate Frames | Chưa hoàn thành                     |
+| Anatomical Calibration         | Chưa hoàn thành                     |
+| Segment length estimation      | Mới xác định phương pháp            |
+| Joint centers / rotation axes  | Chưa hoàn thành                     |
+| Geometrical relations          | Chưa implement                      |
+| Functional relations           | Mới phân tích DIP–PIP               |
+| Forward Kinematics             | Chưa implement                      |
+| Occlusion reconstruction       | Chưa implement                      |
 
 Thứ tự phát triển được đề xuất:
+
 1. Virtual Local Frames.
 2. Anatomical Calibration.
 3. Geometrical Relations.
@@ -301,6 +307,7 @@ class VirtualRootFrame(Kinematics):
 Trợ lý đánh giá đây là nền tảng root reference frame hợp lý, nhưng chưa phải Anatomical Calibration.
 
 Các điểm đã có:
+
 - Landmark selection: wrist, index MCP, middle MCP, pinky MCP.
 - Origin: centroid của bốn landmarks.
 - Z-axis: wrist → middle MCP.
@@ -317,6 +324,7 @@ root_points = (world_points - origin) @ R
 ```
 
 Các điểm cần cải thiện:
+
 1. **Degenerate geometry:** kiểm tra norm trước Normalize và Projection để tránh vector zero hoặc gần zero.
 2. **Temporal continuity:** theo dõi dấu/hướng của axes qua các frame để tránh flip đột ngột; cần kiểm thử cẩn thận khi bàn tay đổi tư thế lớn.
 3. **Stale state:** nếu trả về `last_valid_state`, cần đánh dấu state là stale/invalid và giữ timestamp để downstream không coi dữ liệu cũ là dữ liệu mới.
@@ -336,14 +344,14 @@ kinematics/
 └── forward_kinematics.py
 ```
 
-| Module | Trách nhiệm |
-|---|---|
-| `VirtualRootFrame` | Global hand reference |
-| `VirtualLocalFrame` | Local coordinate frames của từng phalanx |
-| `AnatomicalCalibration` | Segment lengths, joint centers, axes |
-| `GeometricalConstraints` | Marker/segment geometric relations |
-| `FunctionalConstraints` | DOF, joint limits, angular coupling |
-| `ForwardKinematics` | Reconstruct landmark positions |
+| Module                   | Trách nhiệm                              |
+| ------------------------ | ---------------------------------------- |
+| `VirtualRootFrame`       | Global hand reference                    |
+| `VirtualLocalFrame`      | Local coordinate frames của từng phalanx |
+| `AnatomicalCalibration`  | Segment lengths, joint centers, axes     |
+| `GeometricalConstraints` | Marker/segment geometric relations       |
+| `FunctionalConstraints`  | DOF, joint limits, angular coupling      |
+| `ForwardKinematics`      | Reconstruct landmark positions           |
 
 Đây là kiến trúc implementation đề xuất, không phải cấu trúc phần mềm nguyên bản của Cerveri.
 
@@ -352,24 +360,24 @@ kinematics/
 Bắt đầu với index finger:
 
 | MediaPipe ID | Anatomical point |
-|---:|---|
-| 5 | Index MCP |
-| 6 | Index PIP |
-| 7 | Index DIP |
-| 8 | Index TIP |
+| -----------: | ---------------- |
+|            5 | Index MCP        |
+|            6 | Index PIP        |
+|            7 | Index DIP        |
+|            8 | Index TIP        |
 
 Các chiều dài segment được ước lượng từ nhiều frame calibration:
 
 \[
-L_{proximal}=\operatorname{median}(\|P_6-P_5\|)
+L\_{proximal}=\operatorname{median}(\|P_6-P_5\|)
 \]
 
 \[
-L_{middle}=\operatorname{median}(\|P_7-P_6\|)
+L\_{middle}=\operatorname{median}(\|P_7-P_6\|)
 \]
 
 \[
-L_{distal}=\operatorname{median}(\|P_8-P_7\|)
+L\_{distal}=\operatorname{median}(\|P_8-P_7\|)
 \]
 
 Các điểm có thể được biểu diễn trong Root Frame để thống nhất hệ tọa độ. Khoảng cách Euclidean không đổi khi chuyển đổi bằng phép rigid transformation.
@@ -379,6 +387,7 @@ Các điểm có thể được biểu diễn trong Root Frame để thống nh�
 ## 10. Câu hỏi/challenge đang chờ trả lời
 
 Giả sử thu thập 100 frames trong tư thế calibration tĩnh. Trong 100 frames:
+
 - MCP, PIP, DIP, TIP đều có tracking noise.
 - Chiều dài PIP–DIP dao động nhẹ.
 - Root Frame cũng dao động nhẹ theo từng frame.
