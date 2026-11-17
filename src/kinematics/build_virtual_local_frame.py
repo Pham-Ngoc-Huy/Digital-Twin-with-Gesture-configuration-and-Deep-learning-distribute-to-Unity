@@ -109,5 +109,3 @@ class VirtualLocalFrame(Kinematics):
         root_points = (world_points - root_origin) @ root_rotation_matrix
 
         return root_points
-
-    
