@@ -2,11 +2,7 @@ from typing import Dict
 
 import numpy as np
 
-from src.utils import (
-    CfgParse, 
-    Normalize,
-    CrossProduct
-)
+from src.utils import CfgParse, CrossProduct, Normalize
 
 from .base import Kinematics
 
@@ -26,25 +22,49 @@ class VirtualLocalFrame(Kinematics):
         self.hands_cfg_path = hands_cfg_path
         self.hands_cfg = CfgParse(path=self.hands_cfg_path).process()
 
-        self.idx_index_mcp = self.hands_cfg["handmotion"]["index_finger"]["mcp"]["index"]
-        self.idx_index_dip = self.hands_cfg["handmotion"]["index_finger"]["dip"]["index"]
-        self.idx_index_pip = self.hands_cfg["handmotion"]["index_finger"]["pip"]["index"]
-        self.idx_index_tip = self.hands_cfg["handmotion"]["index_finger"]["tip"]["index"]
+        self.idx_index_mcp = self.hands_cfg["handmotion"]["index_finger"]["mcp"][
+            "index"
+        ]
+        self.idx_index_dip = self.hands_cfg["handmotion"]["index_finger"]["dip"][
+            "index"
+        ]
+        self.idx_index_pip = self.hands_cfg["handmotion"]["index_finger"]["pip"][
+            "index"
+        ]
+        self.idx_index_tip = self.hands_cfg["handmotion"]["index_finger"]["tip"][
+            "index"
+        ]
 
         self.idx_ring_mcp = self.hands_cfg["handmotion"]["ring_finger"]["mcp"]["index"]
         self.idx_ring_dip = self.hands_cfg["handmotion"]["ring_finger"]["dip"]["index"]
         self.idx_ring_pip = self.hands_cfg["handmotion"]["ring_finger"]["pip"]["index"]
         self.idx_ring_tip = self.hands_cfg["handmotion"]["ring_finger"]["tip"]["index"]
 
-        self.idx_middle_mcp = self.hands_cfg["handmotion"]["middle_finger"]["mcp"]["index"]
-        self.idx_middle_dip = self.hands_cfg["handmotion"]["middle_finger"]["dip"]["index"]
-        self.idx_middle_pip = self.hands_cfg["handmotion"]["middle_finger"]["pip"]["index"]
-        self.idx_middle_tip = self.hands_cfg["handmotion"]["middle_finger"]["tip"]["index"]
+        self.idx_middle_mcp = self.hands_cfg["handmotion"]["middle_finger"]["mcp"][
+            "index"
+        ]
+        self.idx_middle_dip = self.hands_cfg["handmotion"]["middle_finger"]["dip"][
+            "index"
+        ]
+        self.idx_middle_pip = self.hands_cfg["handmotion"]["middle_finger"]["pip"][
+            "index"
+        ]
+        self.idx_middle_tip = self.hands_cfg["handmotion"]["middle_finger"]["tip"][
+            "index"
+        ]
 
-        self.idx_pinky_mcp = self.hands_cfg["handmotion"]["pinky_finger"]["mcp"]["index"]
-        self.idx_pinky_dip = self.hands_cfg["handmotion"]["pinky_finger"]["dip"]["index"]
-        self.idx_pinky_pip = self.hands_cfg["handmotion"]["pinky_finger"]["pip"]["index"]
-        self.idx_pinky_tip = self.hands_cfg["handmotion"]["pinky_finger"]["tip"]["index"]
+        self.idx_pinky_mcp = self.hands_cfg["handmotion"]["pinky_finger"]["mcp"][
+            "index"
+        ]
+        self.idx_pinky_dip = self.hands_cfg["handmotion"]["pinky_finger"]["dip"][
+            "index"
+        ]
+        self.idx_pinky_pip = self.hands_cfg["handmotion"]["pinky_finger"]["pip"][
+            "index"
+        ]
+        self.idx_pinky_tip = self.hands_cfg["handmotion"]["pinky_finger"]["tip"][
+            "index"
+        ]
 
         self.finger_indices = {
             "index": {
@@ -107,67 +127,48 @@ class VirtualLocalFrame(Kinematics):
         return root_points
 
     def _compute_finger_geomertry(
-        self,
-        finger_points: Dict[str, np.ndarray]
+        self, finger_points: Dict[str, np.ndarray]
     ) -> Dict[str, np.ndarray]:
-        proximal_vector = (
-            finger_points["pip"] - finger_points["mcp"]
-        )
-        intermediate_vector = (
-            finger_points["dip"] - finger_points["pip"]
-        )
-        distal_vector = (
-            finger_points["tip"] - finger_points["dip"]
-        )
+        proximal_vector = finger_points["pip"] - finger_points["mcp"]
+        intermediate_vector = finger_points["dip"] - finger_points["pip"]
+        distal_vector = finger_points["tip"] - finger_points["dip"]
 
         is_valid_proximal = np.linalg.norm(proximal_vector) > 1e-8
         is_valid_intermediate = np.linalg.norm(intermediate_vector) > 1e-8
         is_valid_distal = np.linalg.norm(distal_vector) > 1e-8
-        
+
         return {
             "proximal_vector": {
                 "vector": proximal_vector,
                 "is_valid": is_valid_proximal,
             },
-            "intermediate_vector": { 
+            "intermediate_vector": {
                 "vector": intermediate_vector,
                 "is_valid": is_valid_intermediate,
             },
             "distal_vector": {
                 "vector": distal_vector,
                 "is_valid": is_valid_distal,
-            }
+            },
         }
 
     def _compute_proximal_frame(
-        self,
-        segment_vectors: Dict[str, Dict[str, np.ndarray]]
+        self, segment_vectors: Dict[str, Dict[str, np.ndarray]]
     ):
-        vector_a = segment_vectors['proximal_vector']['vector']
-        vector_b = segment_vectors['intermediate_vector']['vector']
+        vector_a = segment_vectors["proximal_vector"]["vector"]
+        vector_b = segment_vectors["intermediate_vector"]["vector"]
 
-        normal_vector = CrossProduct(
-            v1=vector_a,
-            v2=vector_b
-        ).process()
+        normal_vector = CrossProduct(v1=vector_a, v2=vector_b).process()
 
         normal_magnitude = np.linalg.norm(normal_vector)
 
         if normal_magnitude < 1e-8:
-            return {
-                "vector": None,
-                "is_valid": False
-            }
+            return {"vector": None, "is_valid": False}
 
-        return {
-            "vector": Normalize(v=normal_vector).process(),
-            "is_valid": True
-        }
+        return {"vector": Normalize(v=normal_vector).process(), "is_valid": True}
 
-    def _compute_distal_frame(
-        self
-    ):
+    def _compute_distal_frame(self):
         return 0
 
     def process(self):
-        return 0 
+        return 0
