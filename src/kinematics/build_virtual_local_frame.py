@@ -105,9 +105,14 @@ class VirtualLocalFrame(Kinematics):
         return points
 
     def _get_finger_points(
-        self, points: np.ndarray, mcp_idx: int, dip_idx: int, pip_idx: int
+        self, points: np.ndarray, indices: Dict[str, int]
     ) -> Dict[str, np.ndarray]:
-        return {"mcp": points[mcp_idx], "dip": points[dip_idx], "pip": points[pip_idx]}
+        return {
+            "mcp": points[indices["mcp"]],
+            "pip": points[indices["pip"]],
+            "dip": points[indices["dip"]],
+            "tip": points[indices["tip"]],
+        }
 
     def _root_transformation(
         self, world_points: np.ndarray, root_state: Dict[str, np.ndarray]
@@ -126,9 +131,7 @@ class VirtualLocalFrame(Kinematics):
 
         return root_points
 
-    def _compute_finger_geomertry(
-        self, finger_points: Dict[str, np.ndarray]
-    ) -> Dict[str, np.ndarray]:
+    def _compute_finger_geometry(self, finger_points: Dict[str, np.ndarray]) -> Dict:
         proximal_vector = finger_points["pip"] - finger_points["mcp"]
         intermediate_vector = finger_points["dip"] - finger_points["pip"]
         distal_vector = finger_points["tip"] - finger_points["dip"]
@@ -152,23 +155,122 @@ class VirtualLocalFrame(Kinematics):
             },
         }
 
-    def _compute_proximal_frame(
-        self, segment_vectors: Dict[str, Dict[str, np.ndarray]]
-    ):
-        vector_a = segment_vectors["proximal_vector"]["vector"]
-        vector_b = segment_vectors["intermediate_vector"]["vector"]
+    def _compute_proximal_frame(self, segment_vector: Dict[str, Dict[str, np.ndarray]]):
+        vector_a = segment_vector["proximal_vector"]["vector"]
+        vector_b = segment_vector["intermediate_vector"]["vector"]
+
+        if not (
+            segment_vector["proximal_vector"]["is_valid"]
+            and segment_vector["intermediate_vector"]["is_valid"]
+        ):
+            return {"rotation_matrix": None, "is_valid": False}
 
         normal_vector = CrossProduct(v1=vector_a, v2=vector_b).process()
 
         normal_magnitude = np.linalg.norm(normal_vector)
 
         if normal_magnitude < 1e-8:
-            return {"vector": None, "is_valid": False}
+            return {"rotation_matrix": None, "is_valid": False}
 
-        return {"vector": Normalize(v=normal_vector).process(), "is_valid": True}
+        x_axis = Normalize(v=normal_vector).process()
+        z_axis = Normalize(v=vector_a).process()
+        y_axis = Normalize(v=CrossProduct(v1=z_axis, v2=x_axis).process()).process()
 
-    def _compute_distal_frame(self):
-        return 0
+        rotation_matrix = np.column_stack([x_axis, y_axis, z_axis])
+        return {
+            "rotation_matrix": rotation_matrix,
+            "x_axis": x_axis,
+            "y_axis": y_axis,
+            "z_axis": z_axis,
+            "is_valid": True,
+        }
 
-    def process(self):
-        return 0
+    def _compute_distal_frame(
+        self,
+        proximal_frame: Dict,
+        segment_vector: Dict[str, Dict[str, np.ndarray]],
+        segment_name: str,
+    ) -> Dict:
+        if not proximal_frame["is_valid"]:
+            return {"rotation_matrix": None, "is_valid": False}
+
+        segment = segment_vector[segment_name]
+
+        if not segment["is_valid"]:
+            return {"rotation_matrix": None, "is_valid": False}
+
+        inherited_x = proximal_frame["x_axis"]
+        segment_direction = segment["vector"]
+
+        z_axis = Normalize(v=segment_direction).process()
+
+        x_projected = inherited_x - np.dot(inherited_x, z_axis) * z_axis
+
+        x_magnitude = np.linalg.norm(x_projected)
+
+        if x_magnitude < 1e-8:
+            return {"rotation_matrix": None, "is_valid": False}
+
+        x_axis = x_projected / x_magnitude
+
+        y_axis = Normalize(v=CrossProduct(v1=z_axis, v2=x_axis).process()).process()
+
+        rotation_matrix = np.column_stack([x_axis, y_axis, z_axis])
+
+        return {
+            "rotation_matrix": rotation_matrix,
+            "x_axis": x_axis,
+            "y_axis": y_axis,
+            "z_axis": z_axis,
+            "is_valid": True,
+        }
+
+    def _compute_distal_frames(
+        self, proximal_frame: Dict, segment_vector: Dict
+    ) -> Dict:
+        intermediate_frame = self._compute_distal_frame(
+            proximal_frame=proximal_frame,
+            segment_vector=segment_vector,
+            segment_name="intermediate_vector",
+        )
+
+        distal_frame = self._compute_distal_frame(
+            proximal_frame=proximal_frame,
+            segment_vector=segment_vector,
+            segment_name="distal_vector",
+        )
+
+        return {"intermediate": intermediate_frame, "distal": distal_frame}
+
+    def process(self, world_points: np.ndarray, root_state: Dict) -> Dict:
+        world_points = self._get_points(root_points=world_points)
+
+        root_points = self._root_transformation(
+            world_points=world_points, root_state=root_state
+        )
+
+        result = {}
+
+        for finger_name, indices in self.finger_indices.items():
+            print(f"action: {finger_name}...")
+
+            finger_points = self._get_finger_points(points=root_points, indices=indices)
+
+            segment_vector = self._compute_finger_geometry(finger_points=finger_points)
+
+            proximal_frame = self._compute_proximal_frame(segment_vector=segment_vector)
+
+            distal_frames = self._compute_distal_frames(
+                proximal_frame=proximal_frame, segment_vector=segment_vector
+            )
+
+            result[finger_name] = {
+                "points": finger_points,
+                "geometry": segment_vector,
+                "local_frames": {
+                    "proximal": proximal_frame,
+                    "intermediate": distal_frames["intermediate"],
+                    "distal": distal_frames["distal"],
+                },
+            }
+        return result
