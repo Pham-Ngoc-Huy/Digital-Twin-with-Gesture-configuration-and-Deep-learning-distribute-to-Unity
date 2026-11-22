@@ -53,18 +53,10 @@ class VirtualLocalFrame(Kinematics):
             "index"
         ]
 
-        self.idx_pinky_mcp = self.hands_cfg["handmotion"]["pinky_finger"]["mcp"][
-            "index"
-        ]
-        self.idx_pinky_dip = self.hands_cfg["handmotion"]["pinky_finger"]["dip"][
-            "index"
-        ]
-        self.idx_pinky_pip = self.hands_cfg["handmotion"]["pinky_finger"]["pip"][
-            "index"
-        ]
-        self.idx_pinky_tip = self.hands_cfg["handmotion"]["pinky_finger"]["tip"][
-            "index"
-        ]
+        self.idx_pinky_mcp = self.hands_cfg["handmotion"]["pinky"]["mcp"]["index"]
+        self.idx_pinky_dip = self.hands_cfg["handmotion"]["pinky"]["dip"]["index"]
+        self.idx_pinky_pip = self.hands_cfg["handmotion"]["pinky"]["pip"]["index"]
+        self.idx_pinky_tip = self.hands_cfg["handmotion"]["pinky"]["tip"]["index"]
 
         self.finger_indices = {
             "index": {
