@@ -1,19 +1,16 @@
-
 import numpy as np
 import pytest
 
 from src.kinematics import VirtualLocalFrame
+
 from .base import TestCases
 
 
 class TestVirtualLocalFrame(TestCases):
-
     def setup_method(self):
         super().setup_method()
 
-        self.local_frame = VirtualLocalFrame(
-            hands_cfg_path=self.hands_cfg_path
-        )
+        self.local_frame = VirtualLocalFrame(hands_cfg_path=self.hands_cfg_path)
 
     def valid_landmarks(self):
         """
@@ -59,7 +56,7 @@ class TestVirtualLocalFrame(TestCases):
         points[20] = [-0.5, 0.65, 0.2]
 
         return points
-    
+
     def test_valid_input_shape(self, valid_landmarks):
         points = self.local_frame._get_points(valid_landmarks)
 
@@ -94,9 +91,7 @@ class TestVirtualLocalFrame(TestCases):
             self.local_frame.finger_indices["index"],
         )
 
-        geometry = self.local_frame._compute_finger_geometry(
-            finger_points
-        )
+        geometry = self.local_frame._compute_finger_geometry(finger_points)
 
         assert geometry["proximal_vector"]["is_valid"]
         assert geometry["intermediate_vector"]["is_valid"]
@@ -110,13 +105,9 @@ class TestVirtualLocalFrame(TestCases):
             self.local_frame.finger_indices["index"],
         )
 
-        geometry = self.local_frame._compute_finger_geometry(
-            finger_points
-        )
+        geometry = self.local_frame._compute_finger_geometry(finger_points)
 
-        proximal = self.local_frame._compute_proximal_frame(
-            geometry
-        )
+        proximal = self.local_frame._compute_proximal_frame(geometry)
 
         assert proximal["is_valid"]
 
@@ -142,13 +133,9 @@ class TestVirtualLocalFrame(TestCases):
             self.local_frame.finger_indices["index"],
         )
 
-        geometry = self.local_frame._compute_finger_geometry(
-            finger_points
-        )
+        geometry = self.local_frame._compute_finger_geometry(finger_points)
 
-        proximal = self.local_frame._compute_proximal_frame(
-            geometry
-        )
+        proximal = self.local_frame._compute_proximal_frame(geometry)
 
         assert proximal["is_valid"] is False
         assert proximal["rotation_matrix"] is None
