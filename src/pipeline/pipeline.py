@@ -1,7 +1,7 @@
 import cv2
 
 from src.camera import HandMarker
-from src.kinematics import VirtualRootFrame
+from src.process import VirtualRootFrame
 
 
 class PipeLine:

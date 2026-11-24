@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.kinematics import VirtualRootFrame
+from src.process import VirtualRootFrame
 
 from .base import TestCases
 
@@ -13,7 +13,7 @@ class TestVirtualRootFrame(TestCases):
         self.landmarks[9] = [0.0, 2.0, 0.0]
         self.landmarks[17] = [-1.0, 1.0, 0.0]
         self.result = VirtualRootFrame(
-            hands_cfg_path="src/kinematics/config/cfg.yaml"
+            hands_cfg_path="src/process/config/cfg.yaml"
         ).process(world_landmarks=self.landmarks)
 
     def _rotation_matrix_check(self):

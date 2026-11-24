@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.kinematics import VirtualLocalFrame
+from src.process import VirtualLocalFrame
 
 from .base import TestCases
 

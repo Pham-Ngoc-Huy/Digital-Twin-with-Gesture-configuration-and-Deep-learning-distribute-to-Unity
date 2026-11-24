@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-DEFAULT_HANDS_CFG_PATH = "src/kinematics/config/cfg.yaml"
+DEFAULT_HANDS_CFG_PATH = "src/process/config/cfg.yaml"
 
 
 class Kinematics(ABC):

@@ -2,7 +2,7 @@ from os import PathLike
 
 import numpy as np
 
-from src.kinematics import VirtualLocalFrame, VirtualRootFrame
+from src.process import VirtualLocalFrame, VirtualRootFrame
 
 
 class PipeLineOneFrame:

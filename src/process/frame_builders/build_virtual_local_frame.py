@@ -4,7 +4,7 @@ import numpy as np
 
 from src.utils import CfgParse, CrossProduct, Normalize
 
-from .base import Kinematics
+from ..base import Kinematics
 
 
 class VirtualLocalFrame(Kinematics):
