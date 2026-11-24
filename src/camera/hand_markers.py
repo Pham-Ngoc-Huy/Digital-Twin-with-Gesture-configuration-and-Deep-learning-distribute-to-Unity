@@ -20,7 +20,7 @@ class HandMarker(Stream):
     def __init__(
         self,
         model: str = "handtasks",
-        hands_cfg_path: str = "src/kinematics/config/cfg.yaml",
+        hands_cfg_path: str = "src/process/config/cfg.yaml",
         num_hands: int = 1,
     ):
         super().__init__()
