@@ -10,6 +10,16 @@ from .base import Kinematics
 
 
 class LocalFrameBuilder(Kinematics):
+    def __init__(
+        self,
+        base_vec: list,
+        ref_vec: list,
+        hands_cfg_path: str | None = None,
+    ):
+        super().__init__(hands_cfg_path=hands_cfg_path)
+        self.base_vec = base_vec
+        self.ref_vec = ref_vec
+
     @staticmethod
     def _rotation_matrix_test(vec: np.ndarray) -> bool:
         identity_matrix = np.eye(vec.shape[0])
