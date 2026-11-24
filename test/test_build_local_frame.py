@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.kinematics import LocalFrameBuilder
+from src.process import LocalFrameBuilder
 
 from .base import TestCases
 
