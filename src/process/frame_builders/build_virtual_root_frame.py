@@ -7,7 +7,7 @@ from mediapipe.tasks.python.components.containers.landmark import (
 
 from src.utils import CfgParse, CrossProduct, Normalize, Projection
 
-from .base import Kinematics
+from ..base import Kinematics
 
 
 class VirtualRootFrame(Kinematics):
