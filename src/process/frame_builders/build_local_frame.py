@@ -6,7 +6,7 @@ from src.utils import (
     Projection,
 )
 
-from .base import Kinematics
+from ..base import Kinematics
 
 
 class LocalFrameBuilder(Kinematics):
