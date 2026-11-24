@@ -1,11 +1,9 @@
-
 from os import PathLike
 from pathlib import Path
 
 import numpy as np
 
 from src.pipeline import PipeLineOneFrame
-
 
 _FINGER_ORDER = ("wrist", "thumb", "index", "middle", "ring", "pinky")
 
@@ -24,20 +22,14 @@ def load_world_landmarks(
     if isinstance(data, dict):
         if hand not in data:
             available = ", ".join(sorted(data)) or "none"
-            raise KeyError(
-                f"Hand {hand!r} not found. Available hands: {available}"
-            )
+            raise KeyError(f"Hand {hand!r} not found. Available hands: {available}")
 
         hand_data = data[hand]
 
-        points = [
-            np.asarray(hand_data["wrist"], dtype=float).reshape(1, 3)
-        ]
+        points = [np.asarray(hand_data["wrist"], dtype=float).reshape(1, 3)]
 
         for finger in _FINGER_ORDER[1:]:
-            points.append(
-                np.asarray(hand_data[finger], dtype=float)
-            )
+            points.append(np.asarray(hand_data[finger], dtype=float))
 
         world_landmarks = np.vstack(points)
 
@@ -45,9 +37,7 @@ def load_world_landmarks(
         world_landmarks = np.asarray(data, dtype=float)
 
     if world_landmarks.shape != (21, 3):
-        raise ValueError(
-            f"Expected (21, 3), got {world_landmarks.shape}"
-        )
+        raise ValueError(f"Expected (21, 3), got {world_landmarks.shape}")
 
     if not np.isfinite(world_landmarks).all():
         raise ValueError("Landmarks contain NaN or Inf values.")
@@ -71,9 +61,7 @@ def validate_rotation_matrix(R, tolerance=1e-6):
 
     identity = np.eye(3)
 
-    orthogonality_error = np.linalg.norm(
-        R.T @ R - identity
-    )
+    orthogonality_error = np.linalg.norm(R.T @ R - identity)
 
     determinant = np.linalg.det(R)
 
@@ -121,23 +109,19 @@ def validate_pipeline_result(result):
     local_state = result["local"]
 
     for finger_name, finger_data in local_state.items():
-
         print(f"\n--- {finger_name.upper()} ---")
 
         for frame_name, frame_data in finger_data["local_frames"].items():
-
             if not frame_data["is_valid"]:
                 print(f"\n[{frame_name.upper()}] INVALID / SKIPPED")
-                validation_results[
-                    f"{finger_name}_{frame_name}"
-                ] = False
+                validation_results[f"{finger_name}_{frame_name}"] = False
                 continue
 
-            validation_results[
-                f"{finger_name}_{frame_name}"
-            ] = print_rotation_validation(
-                f"{finger_name.upper()} - {frame_name.upper()}",
-                frame_data["rotation_matrix"],
+            validation_results[f"{finger_name}_{frame_name}"] = (
+                print_rotation_validation(
+                    f"{finger_name.upper()} - {frame_name.upper()}",
+                    frame_data["rotation_matrix"],
+                )
             )
 
     # 3. Summary
@@ -152,10 +136,7 @@ def validate_pipeline_result(result):
 
 
 def main():
-
-    landmark_path = Path(
-        "src/data/landmarks/T01-open-palm.npy"
-    )
+    landmark_path = Path("src/data/landmarks/T01-open-palm.npy")
 
     hands_cfg_path = "src/kinematics/config/cfg.yaml"
 
@@ -169,14 +150,10 @@ def main():
     print(f"Landmark shape: {world_landmarks.shape}")
 
     # Step 2: Initialize pipeline
-    pipeline = PipeLineOneFrame(
-        hands_cfg_path=hands_cfg_path
-    )
+    pipeline = PipeLineOneFrame(hands_cfg_path=hands_cfg_path)
 
     # Step 3: Run kinematics
-    result = pipeline.run(
-        landmark_path=world_landmarks
-    )
+    result = pipeline.run(landmark_path=world_landmarks)
 
     # Step 4: Validate rotation matrices
     validation_results = validate_pipeline_result(result)

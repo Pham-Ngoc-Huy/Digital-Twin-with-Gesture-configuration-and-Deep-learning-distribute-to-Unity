@@ -18,8 +18,8 @@ class VirtualLocalFrame(Kinematics):
 
     """
 
-    def __init__(self, hands_cfg_path: str = "src/kinametics/config/cfg.yaml"):
-        self.hands_cfg_path = hands_cfg_path
+    def __init__(self, hands_cfg_path: str | None = None):
+        super().__init__(hands_cfg_path=hands_cfg_path)
         self.hands_cfg = CfgParse(path=self.hands_cfg_path).process()
 
         self.idx_index_mcp = self.hands_cfg["handmotion"]["index_finger"]["mcp"][

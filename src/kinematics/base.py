@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 
+DEFAULT_HANDS_CFG_PATH = "src/kinematics/config/cfg.yaml"
+
 
 class Kinematics(ABC):
-    def __init__(self, base_vec: list, ref_vec: list):
-        self.base_vec = base_vec
-        self.ref_vec = ref_vec
+    def __init__(self, hands_cfg_path: str | None = None):
+        self.hands_cfg_path = hands_cfg_path or DEFAULT_HANDS_CFG_PATH
 
     @abstractmethod
     def process(self):
