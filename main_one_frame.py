@@ -138,7 +138,7 @@ def validate_pipeline_result(result):
 def main():
     landmark_path = Path("src/data/landmarks/T01-open-palm.npy")
 
-    hands_cfg_path = "src/kinematics/config/cfg.yaml"
+    hands_cfg_path = "src/process/config/cfg.yaml"
 
     # Step 1: Load landmarks
     world_landmarks = load_world_landmarks(
