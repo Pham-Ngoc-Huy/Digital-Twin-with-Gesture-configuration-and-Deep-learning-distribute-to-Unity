@@ -22,36 +22,20 @@ class VirtualLocalFrame(Kinematics):
         super().__init__(hands_cfg_path=hands_cfg_path)
         self.hands_cfg = CfgParse(path=self.hands_cfg_path).process()
 
-        self.idx_index_mcp = self.hands_cfg["handmotion"]["index"]["mcp"][
-            "index"
-        ]
-        self.idx_index_dip = self.hands_cfg["handmotion"]["index"]["dip"][
-            "index"
-        ]
-        self.idx_index_pip = self.hands_cfg["handmotion"]["index"]["pip"][
-            "index"
-        ]
-        self.idx_index_tip = self.hands_cfg["handmotion"]["index"]["tip"][
-            "index"
-        ]
+        self.idx_index_mcp = self.hands_cfg["handmotion"]["index"]["mcp"]["index"]
+        self.idx_index_dip = self.hands_cfg["handmotion"]["index"]["dip"]["index"]
+        self.idx_index_pip = self.hands_cfg["handmotion"]["index"]["pip"]["index"]
+        self.idx_index_tip = self.hands_cfg["handmotion"]["index"]["tip"]["index"]
 
         self.idx_ring_mcp = self.hands_cfg["handmotion"]["ring"]["mcp"]["index"]
         self.idx_ring_dip = self.hands_cfg["handmotion"]["ring"]["dip"]["index"]
         self.idx_ring_pip = self.hands_cfg["handmotion"]["ring"]["pip"]["index"]
         self.idx_ring_tip = self.hands_cfg["handmotion"]["ring"]["tip"]["index"]
 
-        self.idx_middle_mcp = self.hands_cfg["handmotion"]["middle"]["mcp"][
-            "index"
-        ]
-        self.idx_middle_dip = self.hands_cfg["handmotion"]["middle"]["dip"][
-            "index"
-        ]
-        self.idx_middle_pip = self.hands_cfg["handmotion"]["middle"]["pip"][
-            "index"
-        ]
-        self.idx_middle_tip = self.hands_cfg["handmotion"]["middle"]["tip"][
-            "index"
-        ]
+        self.idx_middle_mcp = self.hands_cfg["handmotion"]["middle"]["mcp"]["index"]
+        self.idx_middle_dip = self.hands_cfg["handmotion"]["middle"]["dip"]["index"]
+        self.idx_middle_pip = self.hands_cfg["handmotion"]["middle"]["pip"]["index"]
+        self.idx_middle_tip = self.hands_cfg["handmotion"]["middle"]["tip"]["index"]
 
         self.idx_pinky_mcp = self.hands_cfg["handmotion"]["pinky"]["mcp"]["index"]
         self.idx_pinky_dip = self.hands_cfg["handmotion"]["pinky"]["dip"]["index"]
