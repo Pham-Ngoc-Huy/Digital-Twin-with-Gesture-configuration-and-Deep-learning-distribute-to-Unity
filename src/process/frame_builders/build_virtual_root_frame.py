@@ -38,12 +38,8 @@ class VirtualRootFrame(Kinematics):
         self.last_valid_state: Optional[Dict[str, Any]] = None
 
         self.idx_wrist = self.hands_cfg["handmotion"]["wrist"]["wrist"]["index"]
-        self.idx_index_mcp = self.hands_cfg["handmotion"]["index_finger"]["mcp"][
-            "index"
-        ]
-        self.idx_middle_mcp = self.hands_cfg["handmotion"]["middle_finger"]["mcp"][
-            "index"
-        ]
+        self.idx_index_mcp = self.hands_cfg["handmotion"]["index"]["mcp"]["index"]
+        self.idx_middle_mcp = self.hands_cfg["handmotion"]["middle"]["mcp"]["index"]
         self.idx_pinky_mcp = self.hands_cfg["handmotion"]["pinky"]["mcp"]["index"]
 
         self.required_indices = [

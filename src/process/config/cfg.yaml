@@ -1,6 +1,27 @@
 assets:
   handtasks:
     file_path: "src/assets/hand_landmarker.task"
+
+calibration:
+  epsilon:
+  joint_thickness:
+    index:
+      mcp:
+      pip:
+      dip:
+    middle:
+      mcp:
+      pip:
+      dip:
+    ring:
+      mcp:
+      pip:
+      dip:
+    pinky:
+      mcp:
+      pip:
+      dip:
+
 handmotion:
   wrist:
     wrist:
@@ -19,7 +40,7 @@ handmotion:
     tip:
       index: 4
       description: thumb_tip
-  index_finger:
+  index:
     mcp:
       index: 5
       description: index_finger_mcp
@@ -32,7 +53,7 @@ handmotion:
     tip:
       index: 8
       description: index_finger_tip
-  middle_finger:
+  middle:
     mcp:
       index: 9
       description: middle_finger_mcp
@@ -45,7 +66,7 @@ handmotion:
     tip:
       index: 12
       description: middle_finger_tip
-  ring_finger:
+  ring:
     mcp:
       index: 13
       description: ring_finger_mcp
