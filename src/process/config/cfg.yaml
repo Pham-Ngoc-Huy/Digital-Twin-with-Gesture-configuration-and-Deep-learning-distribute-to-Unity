@@ -21,7 +21,7 @@ calibration:
       mcp:
       pip:
       dip:
-    
+
 handmotion:
   wrist:
     wrist:
