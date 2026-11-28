@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 
@@ -17,13 +17,41 @@ class CalibrationCenterOfRotation(AnatomicalCalibration):
     ):
         super().__init__(hands_cfg_path=hands_cfg_path)
 
-        self.calibration_config = self.hands_cfg_path["calibration"]
-        self.epsilon = self.calibration_config["epsilon"]
-        self.joint_thickness = self.calibration_config["joint_thickness"]
+        self.calibration_config = self.hands_cfg.get("calibration", {})
+        self.epsilon = self.calibration_config.get("epsilon")
+        self.joint_thickness = self.calibration_config.get("joint_thickness", {})
+
+    @property
+    def is_configured(self) -> bool:
+        """
+        Check: (available or not)
+            + epsilon
+            + every required joint-thickness
+        """
+
+        if not isinstance(self.epsilon, (int, float)) or self.joint_thickness is None:
+            return False
+
+        fingers_joint_thickness = self.calibration_config["joint_thickness"]
+
+        for finger in fingers_joint_thickness:
+            joints = self.joint_thickness.get(finger)
+
+            if joints is None:
+                return False
+
+            if any(
+                not isinstance(joints.get(joint), (int, float))
+                or joints.get(joint) <= 0
+                for joint in fingers_joint_thickness[finger]
+            ):
+                return False
+
+        return True
 
     def _get_landmark_and_thickness(
         self, finger_data: Dict, finger: str, frame_name: str
-    ):
+    ) -> Tuple:
         frame_mapping = {"proximal": "mcp", "intermediate": "pip", "distal": "dip"}
 
         if frame_name not in frame_mapping:
@@ -78,6 +106,21 @@ class CalibrationCenterOfRotation(AnatomicalCalibration):
         d_ref: np.ndarray,
     ):
         frames = ["proximal", "intermediate", "distal"]
+
+        # check if there is not enough configured
+        # return the result about `None`
+
+        if not self.is_configured:
+            return {
+                frame_name: {
+                    "origin": None,
+                    "offset_vector": None,
+                    "sign": None,
+                    "is_valid": False,
+                    "reason": "calibration_not_configured",
+                }
+                for frame_name in frames
+            }
 
         finger_result = {}
 
