@@ -32,14 +32,14 @@ class CalibrationCenterOfRotation(AnatomicalCalibration):
         if not isinstance(self.epsilon, (int, float)) or self.joint_thickness is None:
             return False
 
-        fingers_joint_thickness = self.calibration_config['joint_thickness']
-        
+        fingers_joint_thickness = self.calibration_config["joint_thickness"]
+
         for finger in fingers_joint_thickness:
             joints = self.joint_thickness.get(finger)
-        
+
             if joints is None:
                 return False
-        
+
             if any(
                 not isinstance(joints.get(joint), (int, float))
                 or joints.get(joint) <= 0
@@ -50,17 +50,9 @@ class CalibrationCenterOfRotation(AnatomicalCalibration):
         return True
 
     def _get_landmark_and_thickness(
-        self, 
-        finger_data: Dict, 
-        finger: str, 
-        frame_name: str
+        self, finger_data: Dict, finger: str, frame_name: str
     ) -> Tuple:
-        
-        frame_mapping = {
-            "proximal": "mcp", 
-            "intermediate": "pip", 
-            "distal": "dip"
-        }
+        frame_mapping = {"proximal": "mcp", "intermediate": "pip", "distal": "dip"}
 
         if frame_name not in frame_mapping:
             raise ValueError(f"Unknown frame: {frame_name}")
@@ -117,7 +109,7 @@ class CalibrationCenterOfRotation(AnatomicalCalibration):
 
         # check if there is not enough configured
         # return the result about `None`
-        
+
         if not self.is_configured:
             return {
                 frame_name: {
